@@ -41,7 +41,7 @@ input:focus {
 
 button {
   width: 100%;
-  padding: 12px;
+  padding: 0.75em;
   border: none;
   border-radius: 10px;
   background: #3fb945;
@@ -51,6 +51,7 @@ button {
   cursor: pointer;
   transition: 0.3s;
   transition: all 0.4s ease-in-out;
+  margin-bottom: 1em;
 }
 
 button:hover {
@@ -59,4 +60,18 @@ button:hover {
 }
 a {
   color: var(--c-primary);
+}
+
+.error {
+  color: red;
+  font-weight: bold;
+  display: flex;
+  justify-content: flex-start;
+  font-size: 0.8em;
+  padding: 0.3em;
+  &__message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10em;
+  }
 }

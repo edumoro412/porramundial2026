@@ -6,16 +6,38 @@
     </h1>
     <p class="auth__p">Demuestra que sabes de fútbol</p>
   </div>
-  <form class="form">
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
     <div class="form__input-group">
-      <input type="email" placeholder="Correo electrónico" />
+      <input
+        type="email"
+        placeholder="Correo electrónico"
+        formControlName="email"
+      />
+      @if(this.form.get('email')?.touched && this.form.get('email')?.invalid){
+      <small class="error">Debes poner un email válido</small>
+
+      }
     </div>
 
     <div class="form__input-group">
-      <input type="password" placeholder="Contraseña" />
+      <input
+        type="password"
+        placeholder="Contraseña"
+        formControlName="password"
+      />
+      @if(this.form.get('password')?.touched &&
+      this.form.get('password')?.invalid){
+      <small class="error">Debes poner una contraseña válida</small>
+
+      }
     </div>
 
-    <button type="submit">Entrar</button>
+    <button type="submit" [disabled]="loading">
+      {{loading ? 'Entrando...' : 'Entrar'}}
+    </button>
+    @if(this.errorMsg){
+    <small class="error__message">{{this.errorMsg}}</small>
+    }
   </form>
 
   <div class="form__auth-footer">
