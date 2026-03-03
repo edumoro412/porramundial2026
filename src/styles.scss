@@ -1,1 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --c-primary: #32c771;
+  --c-secondary: #333333;
+  --c-tertiary: #262626;
+}
+* {
+  font-family: __walsheim_e6bd29, __walsheim_Fallback_e6bd29, sans-serif;
+  margin: 0;
+  padding: 0;
+}
