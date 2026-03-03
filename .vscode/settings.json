@@ -8,6 +8,8 @@
     "login",
     "register",
     "layout",
-    "routes"
+    "routes",
+    "app",
+    "interface"
   ]
 }
