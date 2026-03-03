@@ -73,3 +73,11 @@ a {
     margin-top: 10em;
   }
 }
+
+@media (max-width: 700px) {
+  .auth {
+    &__title {
+      font-size: 1.2em;
+    }
+  }
+}
