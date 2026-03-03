@@ -51,6 +51,7 @@ button {
   cursor: pointer;
   transition: 0.3s;
   transition: all 0.4s ease-in-out;
+  margin-bottom: 1em;
 }
 
 button:hover {
@@ -59,4 +60,16 @@ button:hover {
 }
 a {
   color: var(--c-primary);
+}
+
+.error {
+  display: flex;
+  justify-content: flex-start;
+  color: red;
+  font-weight: bold;
+  &__message {
+    color: red;
+    font-weight: bold;
+    margin-top: 10em;
+  }
 }

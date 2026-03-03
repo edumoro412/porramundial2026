@@ -6,20 +6,56 @@
     </h1>
     <p class="auth__p">Demuestra que sabes de fútbol</p>
   </div>
-  <form class="form">
+  <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="form__input-group">
-      <input type="text" placeholder="Nombre de usuario" />
+      <input
+        type="text"
+        placeholder="Nombre de usuario"
+        formControlName="name"
+      />
+      @if(form.get('name')?.touched){
+      @if(form.get('name')?.errors?.['required']){
+      <small class="error">Debes poner un nombre válido</small>
+
+      } @if(form.get('name')?.errors?.['minlength']){
+      <small class="error">Debes poner un nombre con más de 2 caracteres</small>
+      } }
     </div>
 
     <div class="form__input-group">
-      <input type="email" placeholder="Correo electrónico" />
+      <input
+        type="email"
+        placeholder="Correo electrónico"
+        formControlName="email"
+      />
+      @if(this.form.get('email')?.touched && this.form.get('email')?.invalid){
+      <small class="error">Debes poner un email válido</small>
+      }
     </div>
 
     <div class="form__input-group">
-      <input type="password" placeholder="Contraseña" />
+      <input
+        type="password"
+        placeholder="Contraseña"
+        formControlName="password"
+      />
+      @if(form.get('password')?.touched){
+      @if(form.get('password')?.errors?.['required']){
+      <small class="error">Debes poner una contraseña válida</small>
+
+      } @if(form.get('password')?.errors?.['minlength']){
+      <small class="error"
+        >Debes poner una contraseña con más de 5 caracteres</small
+      >
+      } }
     </div>
 
-    <button type="submit">Entrar</button>
+    <button type="submit" [disabled]="form.invalid">
+      {{this.loading ? 'Entrando...' : 'Entrar'}}
+    </button>
+    @if(this.errorMsg){
+    <small class="error__message">{{this.errorMsg}}</small>
+    }
   </form>
 
   <div class="form__auth-footer">
