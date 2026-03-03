@@ -25,11 +25,15 @@
         placeholder="Contraseña"
         formControlName="password"
       />
-      @if(this.form.get('password')?.touched &&
-      this.form.get('password')?.invalid){
+      @if(form.get('password')?.touched){
+      @if(form.get('password')?.errors?.['required']){
       <small class="error">Debes poner una contraseña válida</small>
 
-      }
+      } @if(form.get('password')?.errors?.['minlength']){
+      <small class="error"
+        >Debes poner una contraseña con más de 5 caracteres</small
+      >
+      } }
     </div>
 
     <button type="submit" [disabled]="loading">
