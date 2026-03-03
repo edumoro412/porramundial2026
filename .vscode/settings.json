@@ -1,0 +1,13 @@
+{
+  "conventionalCommits.scopes": [
+    "configuration",
+    "public",
+    "styles",
+    "environment",
+    "services",
+    "login",
+    "register",
+    "layout",
+    "routes"
+  ]
+}
