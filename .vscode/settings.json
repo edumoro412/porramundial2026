@@ -10,6 +10,7 @@
     "layout",
     "routes",
     "app",
-    "interface"
+    "interface",
+    "home"
   ]
 }
