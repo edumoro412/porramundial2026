@@ -2,7 +2,8 @@
   --c-primary: #32c771;
   --c-secondary: #333333;
   --c-tertiary: #262626;
-  --c-fourth: #ffffff;
+  --c-white: #ffffff;
+  --c-black: #000000;
 }
 * {
   font-family:
@@ -21,11 +22,19 @@
   padding: 0;
   box-sizing: border-box;
 }
-
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+label {
+  color: var(--c-white);
+}
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: #000000;
+  background: var(--c-black);
 }
