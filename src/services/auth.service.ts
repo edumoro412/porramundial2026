@@ -64,4 +64,11 @@ export class AuthService {
     const { data } = await this.supabase.auth.getUser();
     return data.user;
   }
+
+  async isLogged(): Promise<boolean> {
+    const {
+      data: { session },
+    } = await this.supabase.auth.getSession();
+    return !!session;
+  }
 }
