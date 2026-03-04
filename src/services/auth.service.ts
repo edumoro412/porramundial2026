@@ -65,6 +65,10 @@ export class AuthService {
     return data.user;
   }
 
+  async getSession() {
+    return this.supabase.auth.getSession();
+  }
+
   async isLogged(): Promise<boolean> {
     const {
       data: { session },
