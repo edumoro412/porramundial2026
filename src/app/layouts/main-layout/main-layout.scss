@@ -19,5 +19,21 @@
         }
       }
     }
+    &--buttons {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      justify-content: flex-end;
+      gap: 2em;
+      padding: 1em;
+      &-icon {
+        width: 2.5em;
+        transition: all 0.3s ease-in-out;
+        &:hover {
+          transform: scale(1.1);
+        }
+      }
+    }
   }
 }
