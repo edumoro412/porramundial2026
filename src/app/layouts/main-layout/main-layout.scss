@@ -1,0 +1,23 @@
+.container {
+  min-height: 100dvh;
+
+  &__header {
+    height: 15dvh;
+    background-color: var(--c-primary);
+    display: flex;
+    width: 100%;
+    &--logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1em;
+      &-image {
+        transition: all 0.3s ease-in-out;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
+}
