@@ -2,6 +2,7 @@
   min-height: 100dvh;
 
   &__header {
+    position: sticky;
     height: 15dvh;
     background-color: var(--c-primary);
     display: flex;
@@ -38,6 +39,48 @@
         transition: all 0.3s ease-in-out;
         &:hover {
           transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  &__content {
+    min-height: 85dvh;
+  }
+  &__footer {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .container {
+    &__header {
+      height: 10dvh;
+      &--logo {
+        width: 100%;
+        justify-content: center;
+      }
+      &--buttons {
+        display: none;
+      }
+    }
+    &__content {
+      min-height: 82dvh;
+    }
+    &__footer {
+      display: block;
+      height: 8dvh;
+      background-color: var(--c-secondary);
+      position: fixed;
+      width: 100%;
+      &--logos {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        justify-content: space-around;
+        align-items: center;
+        &-icon {
+          width: 3em;
         }
       }
     }
