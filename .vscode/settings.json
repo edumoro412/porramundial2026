@@ -11,6 +11,8 @@
     "routes",
     "app",
     "interface",
-    "home"
+    "home",
+    "user",
+    "user-page"
   ]
 }
