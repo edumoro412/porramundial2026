@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environments';
 import { RegisterResponse } from '../app/interface/response';
+import { UserSimple } from '../app/interface/user';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +29,20 @@ export class AuthService {
     email: string,
     password: string,
     name: string,
-  ): Promise<RegisterResponse | undefined> {
+  ): Promise<RegisterResponse> {
+    const { data: existingProfile } = await this.supabase
+      .from('profiles')
+      .select('id')
+      .eq('name', name)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return {
+        success: false,
+        message: 'El nombre de usuario ya está en uso.',
+      };
+    }
+
     const { data, error } = await this.supabase.auth.signUp({
       email,
       password,
@@ -40,9 +54,8 @@ export class AuthService {
           success: false,
           message: 'El email ya está registrado. Inicia sesión.',
         };
-      } else {
-        return { success: false, message: error.message };
       }
+      return { success: false, message: error.message };
     }
 
     if (!data.user) {
@@ -53,13 +66,13 @@ export class AuthService {
       id: data.user.id,
       name,
     });
+
     if (insertError) {
       return { success: false, message: insertError.message };
     }
 
-    return { success: true, message: 'Exito' };
+    return { success: true, message: 'Éxito' };
   }
-
   async getCurrentUser(): Promise<User | null> {
     const { data } = await this.supabase.auth.getUser();
     return data.user;
@@ -74,5 +87,20 @@ export class AuthService {
       data: { session },
     } = await this.supabase.auth.getSession();
     return !!session;
+  }
+
+  async getCurrentSimpleUser(): Promise<UserSimple | null> {
+    const user = await this.getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return data;
   }
 }
