@@ -1,6 +1,26 @@
 @if(!loading()){
-
-<p>home works</p>
+<div class="home">
+  <div class="home__header">
+    <h1 class="home__header--title">
+      Bienvenido de nuevo
+      <span class="home__header--title-span">{{user?.name}}</span>
+    </h1>
+    <section class="home__header--countdown">
+      <article class="home__header--countdown-time">
+        <p class="p">Dias <span class="p-time"> {{days()}} </span></p>
+      </article>
+      <article class="home__header--countdown-time">
+        <p class="p">Horas <span class="p-time"> {{hours()}} </span></p>
+      </article>
+      <article class="home__header--countdown-time">
+        <p class="p">Minutos <span class="p-time"> {{minutes()}} </span></p>
+      </article>
+      <article class="home__header--countdown-time">
+        <p class="p">Segundos <span class="p-time"> {{seconds()}} </span></p>
+      </article>
+    </section>
+  </div>
+</div>
 } @else{
 <div class="loading">
   <img

@@ -1,7 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
+import { UserSimple } from '../../interface/user';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -9,17 +11,26 @@ import { Router } from '@angular/router';
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   loading = signal(true);
+  user: UserSimple | null = null;
+
+  // Countdown
+  days = signal('000');
+  hours = signal('00');
+  minutes = signal('00');
+  seconds = signal('00');
+  private target = new Date('2026-06-11T20:00:00');
+  private countdownSub!: Subscription;
+
   constructor(
     private auth: AuthService,
     private router: Router,
-  ) {
-    console.log('CONSTRUCTOR HOME');
-  }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     const { data } = await this.auth.getSession();
+    this.user = await this.auth.getCurrentSimpleUser();
 
     if (!data.session) {
       await this.router.navigateByUrl('/login');
@@ -27,5 +38,28 @@ export class Home implements OnInit {
     }
 
     this.loading.set(false);
+
+    this.updateCountdown();
+    this.countdownSub = interval(1000).subscribe(() => this.updateCountdown());
+  }
+
+  ngOnDestroy(): void {
+    this.countdownSub?.unsubscribe();
+  }
+
+  private updateCountdown(): void {
+    const diff = this.target.getTime() - new Date().getTime();
+    if (diff <= 0) return;
+
+    this.days.set(String(Math.floor(diff / 86400000)).padStart(2, '0'));
+    this.hours.set(
+      String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0'),
+    );
+    this.minutes.set(
+      String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0'),
+    );
+    this.seconds.set(
+      String(Math.floor((diff % 60000) / 1000)).padStart(2, '0'),
+    );
   }
 }
