@@ -12,29 +12,63 @@
       <h1 class="container__header--logo-title">FIFA World Cup 26™</h1>
     </article>
     <article class="container__header--buttons">
-      <a href="#">
+      <a
+        routerLink="/user"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact:true}"
+      >
+        @if(isActive('/user')){
+        <img
+          class="container__header--buttons-icon"
+          src="/icons/user-icon-white.svg"
+          alt="Icono usuario"
+          title="Usuario"
+        />
+        }@else{
+
         <img
           class="container__header--buttons-icon"
           src="/icons/user-icon.svg"
           alt="Icono usuario"
           title="Usuario"
         />
+        }
       </a>
       <a href="#">
+        @if(isActive('/leagues')){
+        <img
+          class="container__header--buttons-icon"
+          src="/icons/trophy-icon-white.svg"
+          alt="Icono ligas"
+          title="Ligas"
+        />
+        }@else {
+
         <img
           class="container__header--buttons-icon"
           src="/icons/trophy-icon.svg"
           alt="Icono ligas"
           title="Ligas"
         />
+        }
       </a>
       <a href="#">
+        @if(isActive('/matches')){
+        <img
+          class="container__header--buttons-icon"
+          src="/icons/field-icon-white.svg"
+          alt="Icono partidos"
+          title="Partidos"
+        />
+        }@else {
+
         <img
           class="container__header--buttons-icon"
           src="/icons/field-icon.svg"
           alt="Icono partidos"
           title="Partidos"
         />
+        }
       </a>
     </article>
   </section>
@@ -43,24 +77,60 @@
   </section>
   <section class="container__footer">
     <article class="container__footer--logos">
-      <img
-        class="container__footer--logos-icon"
-        src="/icons/user-icon-white.svg"
-        alt="Icono usuario"
-        title="Usuario"
-      />
-      <img
-        class="container__footer--logos-icon"
-        src="/icons/trophy-icon-white.svg"
-        alt="Icono ligas"
-        title="Ligas"
-      />
-      <img
-        class="container__footer--logos-icon"
-        src="/icons/field-icon-white.svg"
-        alt="Icono partidos"
-        title="Partidos"
-      />
+      <a href="/user">
+        @if(isActive('/user')){
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/user-icon-green.svg"
+          alt="Icono usuario"
+          title="Usuario"
+        />
+        }@else{
+
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/user-icon-white.svg"
+          alt="Icono usuario"
+          title="Usuario"
+        />
+        }
+      </a>
+      <a href="#">
+        @if(isActive('/leagues')){
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/trophy-icon-green.svg"
+          alt="Icono ligas"
+          title="Ligas"
+        />
+        }@else {
+
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/trophy-icon-white.svg"
+          alt="Icono ligas"
+          title="Ligas"
+        />
+        }
+      </a>
+      <a href="#">
+        @if(isActive('/matches')){
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/field-icon-green.svg"
+          alt="Icono partidos"
+          title="Partidos"
+        />
+        }@else{
+
+        <img
+          class="container__footer--logos-icon"
+          src="/icons/field-icon-white.svg"
+          alt="Icono partidos"
+          title="Partidos"
+        />
+        }
+      </a>
     </article>
   </section>
 </div>
