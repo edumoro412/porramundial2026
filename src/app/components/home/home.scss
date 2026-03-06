@@ -12,11 +12,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0.75em 1em;
+
     &--title {
       color: rgb(107, 105, 105);
       display: flex;
       flex-direction: column;
-      padding: 0.5em;
       font-family: "Barlow Condensed", sans-serif;
       font-weight: 700;
       text-transform: uppercase;
@@ -26,21 +27,77 @@
       &-span {
         color: var(--c-white);
         font-size: 1.5em;
+        line-height: 1;
       }
     }
+
     &--countdown {
       display: flex;
+      gap: 0.5em;
+
       &-time {
         background-color: #0f0f0f;
-        margin: 1em;
-        padding: 0.5em 1.5em;
+        padding: 0.5em 1em;
         border: 0.5px solid rgb(65, 65, 65);
         border-top: 1px solid var(--c-primary);
-        border-radius: 1em;
+        border-radius: 0.75em;
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1em;
+
+      &--title {
+        font-size: 1.2em;
+      }
+
+      &--countdown {
+        width: 100%;
+        justify-content: space-between;
+
+        &-time {
+          flex: 1;
+          text-align: center;
+          padding: 0.5em 0.25em;
+          border-radius: 0.5em;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+      gap: 1em;
+
+      &--title {
+        font-size: 1.2em;
+        text-align: center;
+        width: 100%;
+      }
+
+      &--countdown {
+        width: 100%;
+        justify-content: space-between;
+
+        &-time {
+          flex: 1;
+          text-align: center;
+          padding: 0.5em 0.25em;
+          border-radius: 0.5em;
+        }
+      }
+    }
+
+    @media (max-width: 400px) {
+      &--title {
+        font-size: 1em;
       }
     }
   }
 }
+
 .p {
   display: flex;
   flex-direction: column-reverse;
@@ -48,9 +105,20 @@
   align-items: center;
   font-size: 0.7em;
   color: rgb(107, 105, 105);
+  margin: 0;
+
   &-time {
     color: var(--c-primary);
     text-shadow: 0 0 2em rgba(91, 187, 111, 0.3);
     font-size: 4em;
+    line-height: 1;
+
+    @media (max-width: 768px) {
+      font-size: 2.5em;
+    }
+
+    @media (max-width: 400px) {
+      font-size: 2em;
+    }
   }
 }
