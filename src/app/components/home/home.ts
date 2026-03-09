@@ -15,7 +15,6 @@ export class Home implements OnInit, OnDestroy {
   loading = signal(true);
   user: UserSimple | null = null;
 
-  // Countdown
   days = signal('000');
   hours = signal('00');
   minutes = signal('00');
