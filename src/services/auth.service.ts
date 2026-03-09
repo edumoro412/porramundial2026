@@ -25,6 +25,10 @@ export class AuthService {
     return data;
   }
 
+  async logOut() {
+    await this.supabase.auth.signOut();
+  }
+
   async register(
     email: string,
     password: string,
