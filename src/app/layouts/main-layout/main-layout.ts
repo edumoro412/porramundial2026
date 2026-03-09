@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 import {
-  Route,
-  RouterLink,
   RouterOutlet,
   RouterLinkWithHref,
   RouterLinkActive,
