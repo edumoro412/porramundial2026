@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { UserSimple } from '../../interface/user';
 import { OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-page',
@@ -17,11 +18,17 @@ export class UserPage implements OnInit {
   username = signal(this.user?.name);
   errorMsg = signal('');
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+  ) {}
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
       this.user = await this.auth.getCurrentSimpleUser();
+      if (!this.user) {
+        this.router.navigateByUrl('/login');
+      }
       this.avatarUrl.set(this.user?.avatar_url);
       this.username.set(this.user?.name);
     } catch (error) {
@@ -68,5 +75,9 @@ export class UserPage implements OnInit {
 
   resetErrorMsg() {
     this.errorMsg.set('');
+  }
+  async logOut() {
+    await this.auth.logOut();
+    this.router.navigateByUrl('/login');
   }
 }

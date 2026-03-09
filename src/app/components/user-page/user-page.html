@@ -46,7 +46,9 @@
     </button>
   </section>
   <section class="user__logout">
-    <button class="user__logout--button">Cerrar Sesion</button>
+    <button (click)="logOut()" class="user__logout--button">
+      Cerrar Sesion
+    </button>
   </section>
 </div>
 } @if(loading()) {
