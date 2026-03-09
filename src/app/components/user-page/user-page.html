@@ -1,14 +1,36 @@
+@if(!loading()){
+
 <div class="user">
   <h1 class="user__title">Mi perfil</h1>
   <section class="user__avatar">
-    <img
-      src="user_img.png"
-      alt="Foto de perfil"
-      title="Avatar del usuario"
-      class="user__avatar--img"
+    <label for="avatar-upload">
+      <img
+        [src]="user?.avatar_url || 'user_img.png'"
+        alt="Foto de perfil"
+        title="Avatar del usuario"
+        class="user__avatar--img"
+      />
+    </label>
+    <input
+      type="file"
+      id="avatar-upload"
+      class="file"
+      accept="image/*"
+      style="display: none"
+      (change)="changeAvatar($event)"
     />
     <h2 class="user__avatar--name">EDUMORO</h2>
     <h3 class="user__avatar--email">edu@gmail.com</h3>
     <h4 class="user__avatar--explain">Toca el avatar para cambiarlo</h4>
   </section>
 </div>
+} @if(loading()) {
+<div class="loading-container">
+  <img
+    src="loading.gif"
+    alt="Icono de carga"
+    aria-label="Icono de carga"
+    class="loading-container__gif"
+  />
+</div>
+}

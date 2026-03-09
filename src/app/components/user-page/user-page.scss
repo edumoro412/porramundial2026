@@ -52,3 +52,13 @@
     }
   }
 }
+
+.loading-container {
+  min-height: 80dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &__gif {
+    width: 12.5em;
+  }
+}
