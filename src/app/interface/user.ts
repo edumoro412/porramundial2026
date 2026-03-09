@@ -2,5 +2,4 @@ export interface UserSimple {
   name: string;
   avatar_url?: string;
   id: string;
-  email: string;
 }
