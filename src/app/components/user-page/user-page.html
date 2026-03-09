@@ -19,9 +19,31 @@
       style="display: none"
       (change)="changeAvatar($event)"
     />
-    <h2 class="user__avatar--name">{{user?.name}}</h2>
-    <h3 class="user__avatar--email">{{user?.email}}</h3>
+    <h2 class="user__avatar--name">{{username()}}</h2>
     <h4 class="user__avatar--explain">Toca el avatar para cambiarlo</h4>
+  </section>
+  <section class="user__username">
+    <h2 class="user__username--title">Nombre de usuario</h2>
+    <input
+      type="text"
+      name="name"
+      id="name"
+      [value]="username()"
+      class="user__username--input"
+      #input
+      (change)="resetErrorMsg()"
+      [placeholder]="this.username()"
+    />
+    @if(this.errorMsg()){
+    <small class="error">{{this.errorMsg()}}</small>
+    }
+    <button
+      class="user__username--button"
+      (click)="cambiarNombre(input.value)"
+      [disabled]="this.disabled()"
+    >
+      {{this.disabled() ? 'Guardando...' : 'Guardar'}}
+    </button>
   </section>
 </div>
 } @if(loading()) {

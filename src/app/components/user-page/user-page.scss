@@ -29,6 +29,7 @@
     background-color: var(--c-fourth);
     border-radius: 1em;
     padding: 3em;
+    width: 30em;
     &--img {
       width: 20em;
       height: 20em;
@@ -42,16 +43,46 @@
       font-size: 1.5em;
       text-transform: uppercase;
     }
-
-    &--email {
-      color: gray;
-    }
     &--explain {
       color: rgb(97, 96, 96);
       font-size: 1em;
     }
     &:hover {
       box-shadow: 0 0 2em var(--c-primary);
+    }
+  }
+  &__username {
+    background-color: var(--c-fourth);
+    padding: 1em;
+    border-radius: 1em;
+    width: 30em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    &--input {
+      background-color: var(--c-secondary);
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 0.5em;
+      text-align: center;
+      color: var(--c-white);
+      &:focus {
+        outline: 0.5px solid var(--c-primary);
+        box-shadow: 0 0 2em var(--c-primary);
+      }
+    }
+    &--button {
+      padding: 0.8em 3em;
+      background-color: var(--c-primary);
+      border: none;
+      border-radius: 0.5em;
+      text-transform: uppercase;
+      font-weight: bold;
+      transition: 0.3s all ease-in-out;
+      &:hover {
+        transform: scale(1.05);
+      }
     }
   }
 }
@@ -68,4 +99,9 @@
 .label {
   height: 20em;
   width: 20em;
+}
+
+.error {
+  color: red;
+  font-weight: bold;
 }

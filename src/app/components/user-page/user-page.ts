@@ -11,8 +11,11 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class UserPage implements OnInit {
   loading = signal(false);
+  disabled = signal(false);
   user: UserSimple | null = null;
   avatarUrl = signal(this.user?.avatar_url);
+  username = signal(this.user?.name);
+  errorMsg = signal('');
 
   constructor(private auth: AuthService) {}
   async ngOnInit(): Promise<void> {
@@ -20,7 +23,7 @@ export class UserPage implements OnInit {
     try {
       this.user = await this.auth.getCurrentSimpleUser();
       this.avatarUrl.set(this.user?.avatar_url);
-      console.log('Este es el usuario ' + this.user);
+      this.username.set(this.user?.name);
     } catch (error) {
       console.log('Error ' + error);
     } finally {
@@ -39,5 +42,31 @@ export class UserPage implements OnInit {
     } catch (err) {
       console.log(err);
     }
+  }
+
+  async cambiarNombre(nombre: string) {
+    this.errorMsg.set('');
+    this.disabled.set(true);
+    try {
+      const user = this.user;
+      if (!nombre || !user) {
+        return;
+      }
+
+      const response = await this.auth.updateUserName(user.id, nombre);
+      if (!response.success) {
+        this.errorMsg.set(response.message);
+        return;
+      }
+      this.username.set(nombre);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      this.disabled.set(false);
+    }
+  }
+
+  resetErrorMsg() {
+    this.errorMsg.set('');
   }
 }
