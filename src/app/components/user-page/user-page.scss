@@ -31,8 +31,11 @@
     padding: 3em;
     &--img {
       width: 20em;
+      height: 20em;
       cursor: pointer;
-      border-radius: 10em;
+      border-radius: 100%;
+      object-fit: cover;
+      object-position: center;
     }
 
     &--name {

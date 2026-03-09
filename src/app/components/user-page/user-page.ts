@@ -12,12 +12,15 @@ import { AuthService } from '../../../services/auth.service';
 export class UserPage implements OnInit {
   loading = signal(false);
   user: UserSimple | null = null;
+  avatarUrl = signal(this.user?.avatar_url);
 
   constructor(private auth: AuthService) {}
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
       this.user = await this.auth.getCurrentSimpleUser();
+      this.avatarUrl.set(this.user?.avatar_url);
+      console.log('Este es el usuario ' + this.user);
     } catch (error) {
       console.log('Error ' + error);
     } finally {
@@ -28,6 +31,13 @@ export class UserPage implements OnInit {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file || !this.user) return;
 
-    this.auth.uploadAvatar(file, this.user.id);
+    try {
+      const newUrl = await this.auth.uploadAvatar(file, this.user.id);
+      if (newUrl) {
+        this.avatarUrl.set(newUrl);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 }
