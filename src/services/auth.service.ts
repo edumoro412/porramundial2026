@@ -33,7 +33,7 @@ export class AuthService {
     const { data: existingProfile } = await this.supabase
       .from('profiles')
       .select('id')
-      .eq('name', name)
+      .eq('name', name.toLowerCase())
       .maybeSingle();
 
     if (existingProfile) {
@@ -64,7 +64,7 @@ export class AuthService {
 
     const { error: insertError } = await this.supabase.from('profiles').insert({
       id: data.user.id,
-      name,
+      name: name.toLowerCase(),
     });
 
     if (insertError) {
@@ -135,5 +135,30 @@ export class AuthService {
     }
 
     return publicUrl;
+  }
+  async updateUserName(
+    user_id: string,
+    name: string,
+  ): Promise<RegisterResponse> {
+    const { data: existing, error } = await this.supabase
+      .from('profiles')
+      .select('*')
+      .eq('name', name.toLowerCase())
+      .maybeSingle();
+
+    if (existing) {
+      return { success: false, message: 'Este nombre ya esta en uso' };
+    }
+
+    const update = await this.supabase
+      .from('profiles')
+      .update({ name: name.toLowerCase() })
+      .eq('id', user_id);
+
+    if (update) {
+      return { success: true, message: 'Cambiado con exito' };
+    }
+
+    return { success: false, message: 'Algo no salió como debería' };
   }
 }
