@@ -103,4 +103,37 @@ export class AuthService {
 
     return data;
   }
+
+  async uploadAvatar(file: File, userId: string): Promise<string | null> {
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    const { error: uploadError } = await this.supabase.storage
+      .from('avatars')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      console.error(uploadError);
+      throw uploadError;
+    }
+
+    const { data } = this.supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath);
+
+    const publicUrl = data.publicUrl;
+
+    const { error: dbError } = await this.supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', userId);
+
+    if (dbError) {
+      console.error(dbError);
+      throw dbError;
+    }
+
+    return publicUrl;
+  }
 }
