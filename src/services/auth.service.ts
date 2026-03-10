@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environments';
-import { RegisterResponse } from '../app/interface/response';
+import { Liga, RegisterResponse } from '../app/interface/response';
 import { UserSimple } from '../app/interface/user';
 
 @Injectable({
@@ -164,5 +164,48 @@ export class AuthService {
     }
 
     return { success: false, message: 'Algo no salió como debería' };
+  }
+
+  async crearLiga(liga: Liga): Promise<RegisterResponse> {
+    const { data: nombre } = await this.supabase
+      .from('leagues')
+      .select('name')
+      .eq('name', liga.name.toLowerCase());
+
+    if (nombre) {
+      return { success: false, message: 'Este nombre de liga esta ya en uso' };
+    }
+
+    const { data: codigo } = await this.supabase
+      .from('leagues')
+      .select('code')
+      .eq('code', liga.code.toLowerCase());
+
+    if (nombre) {
+      return { success: false, message: 'Este codeigo de liga esta ya en uso' };
+    }
+
+    const user = await this.getCurrentSimpleUser();
+    if (!user) {
+      return {
+        success: false,
+        message: 'Necesitas estar registrado para crear una liga',
+      };
+    }
+
+    const { data: creada } = await this.supabase.from('leagues').insert({
+      code: liga.code.toLowerCase(),
+      name: liga.name.toLowerCase(),
+      cretor: user.id,
+    });
+
+    if (!creada) {
+      return { success: false, message: 'Ocurrió un error al crear la liga' };
+    }
+    return {
+      success: true,
+      message:
+        'La liga fue creada con éxito. Comparte el código con tus amigos!',
+    };
   }
 }
