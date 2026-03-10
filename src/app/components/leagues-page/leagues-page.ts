@@ -12,6 +12,7 @@ export class LeaguesPage implements OnInit {
   invitationcode = signal('');
   loading = signal(false);
 
+  /*   falta crear y comprobar que funciona el crearLiga, falta quitar las ligas de ejemplo y crear una funcion para traerse las ligas a las que pertenece el usuario, falta un boton para al darle que te cree un nuevo codigo, falta que el boton de copiar funcione, y falta la funcion de unirse a liga teniendo en cuenta que no puede unirse un usuario que ya esta unido */
   ngOnInit(): void {
     this.loading.set(true);
     try {
