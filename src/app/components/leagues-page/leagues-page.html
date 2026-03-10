@@ -74,7 +74,8 @@
       </div>
       <button
         class="leagues__section--button"
-        (click)="crearLiga(nombreliga.value, codigo.textContent.toString()!)"
+        [disabled]="!nombreliga.value || !codigo.textContent"
+        (click)="crearLiga(nombreliga.value!, codigo.textContent!)"
       >
         Crear liga
       </button>
