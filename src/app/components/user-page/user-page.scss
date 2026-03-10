@@ -30,7 +30,8 @@
     background-color: var(--c-fourth);
     border-radius: 1em;
     padding: 3em;
-    width: 30em;
+    width: 35%;
+    box-sizing: border-box;
     &--img {
       width: 15em;
       height: 15em;
@@ -43,10 +44,13 @@
     &--name {
       font-size: 1.5em;
       text-transform: uppercase;
+      text-align: center;
+      word-break: break-word;
     }
     &--explain {
       color: rgb(97, 96, 96);
       font-size: 1em;
+      text-align: center;
     }
     &:hover {
       box-shadow: 0 0 2em var(--c-primary);
@@ -56,11 +60,12 @@
     background-color: var(--c-fourth);
     padding: 1em;
     border-radius: 1em;
-    width: 30em;
+    width: 35%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1em;
+    box-sizing: border-box;
     &--input {
       background-color: var(--c-secondary);
       border: none;
@@ -74,7 +79,7 @@
       }
     }
     &--button {
-      padding: 0.8em 3em;
+      padding: 1em 4em;
       background-color: var(--c-primary);
       border: none;
       border-radius: 0.5em;
@@ -124,4 +129,44 @@
 .error {
   color: red;
   font-weight: bold;
+}
+
+@media (max-width: 700px) {
+  .user {
+    &__avatar {
+      width: 90%;
+      &--img {
+        width: min(15em, 60vw);
+        height: min(15em, 60vw);
+      }
+    }
+    &__username {
+      width: 90%;
+      &--input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5em 5em;
+      }
+      &--button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5em 5em;
+      }
+    }
+    &__logout {
+      width: 90%;
+      box-sizing: border-box;
+      &--button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5em 5em;
+        margin-bottom: 5em;
+      }
+    }
+  }
+
+  .label {
+    width: min(15em, 60vw);
+    height: min(15em, 60vw);
+  }
 }
