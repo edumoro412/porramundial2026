@@ -1,0 +1,99 @@
+<div class="leagues">
+  <h1 class="leagues__title">Ligas</h1>
+
+  <!-- Mis ligas -->
+  <section class="leagues__section">
+    <h2 class="leagues__section--title">Mis ligas</h2>
+    <div class="leagues__grid">
+      <div class="leagues__card">
+        <div class="leagues__card--header">
+          <span class="leagues__card--name">Los Cracks</span>
+          <span class="leagues__card--badge">Creador</span>
+        </div>
+        <div class="leagues__card--info">
+          <span class="leagues__card--players">👥 8 jugadores</span>
+          <div class="leagues__card--code">
+            <span class="leagues__card--code-value">ABC-1234</span>
+            <button class="leagues__card--code-copy" title="Copiar código">
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="leagues__card">
+        <div class="leagues__card--header">
+          <span class="leagues__card--name">Premier Amigos</span>
+        </div>
+        <div class="leagues__card--info">
+          <span class="leagues__card--players">👥 5 jugadores</span>
+          <div class="leagues__card--code">
+            <span class="leagues__card--code-value">XYZ-5678</span>
+            <button class="leagues__card--code-copy" title="Copiar código">
+              Copiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Crear liga -->
+  <section class="leagues__section">
+    <h2 class="leagues__section--title">Crear liga</h2>
+    <div class="leagues__section--card">
+      <div class="leagues__section--field">
+        <label class="leagues__section--label">Nombre de la liga</label>
+        <input
+          type="text"
+          class="leagues__section--input"
+          placeholder="Ej: Los Cracks"
+          #nombreliga
+        />
+      </div>
+      <div class="leagues__section--field">
+        <label class="leagues__section--label">Código de invitación</label>
+        <div class="leagues__section--code">
+          <span class="leagues__section--code-value" #codigo
+            >{{invitationcode()}}</span
+          >
+          <button class="leagues__section--code-copy">
+            <img
+              src="/icons/copy-icon.svg"
+              alt="Imagen de copiar"
+              class="leagues__section--code-copy-img"
+            />
+          </button>
+        </div>
+        <small class="leagues__section--hint">
+          Comparte este código con tus amigos para que se unan
+        </small>
+        @if(errorMsg()){
+        <small class="error">{{errorMsg()}}</small>
+        }
+      </div>
+      <button
+        class="leagues__section--button"
+        (click)="crearLiga(nombreliga.value, codigo.textContent.toString()!)"
+      >
+        Crear liga
+      </button>
+    </div>
+  </section>
+
+  <!-- Unirse a liga -->
+  <section class="leagues__section">
+    <h2 class="leagues__section--title">Unirse a una liga</h2>
+    <div class="leagues__section--card">
+      <div class="leagues__section--field">
+        <label class="leagues__section--label">Código de invitación</label>
+        <input
+          type="text"
+          class="leagues__section--input"
+          placeholder="Ej: ABC-1234"
+        />
+      </div>
+      <button class="leagues__section--button">Unirse</button>
+    </div>
+  </section>
+</div>
