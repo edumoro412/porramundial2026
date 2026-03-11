@@ -193,42 +193,35 @@ export class AuthService {
       };
     }
 
-    const { data: creada, error } = await this.supabase.from('leagues').insert({
-      code: liga.code.toLowerCase(),
-      name: liga.name.toLowerCase(),
-      creator: user.id,
-    });
-
-    if (error) {
-      return { success: false, message: 'Ocurrió un error al crear la liga' };
-    }
-
-    const { data: id, error: errorId } = await this.supabase
+    const { data: creada, error } = await this.supabase
       .from('leagues')
+      .insert({
+        code: liga.code.toLowerCase(),
+        name: liga.name.toLowerCase(),
+        creator: user.id,
+      })
       .select('id')
-      .eq('name', liga.name)
-      .maybeSingle();
+      .single();
 
-    if (errorId) {
-      return {
-        success: false,
-        message: 'Hubo un error al intentar recoger el id',
-      };
+    if (error || !creada) {
+      return { success: false, message: 'Ocurrió un error al crear la liga' };
     }
 
     const { error: userLeaguesError } = await this.supabase
       .from('users_leagues')
       .insert({
         user_id: user.id,
-        league_id: id?.id,
+        league_id: creada.id,
       });
 
     if (userLeaguesError) {
+      console.error('users_leagues error:', userLeaguesError);
       return {
         success: false,
         message: 'Ocurrió un error al añadir el jugador a la liga',
       };
     }
+
     return {
       success: true,
       message:
@@ -236,5 +229,38 @@ export class AuthService {
     };
   }
 
-  async unirLiga(code: string) {}
+  async unirLiga(code: string, user_id: string): Promise<RegisterResponse> {
+    const { data: id, error: error } = await this.supabase
+      .from('leagues')
+      .select('id')
+      .eq('code', code.toLowerCase())
+      .maybeSingle();
+
+    if (error) {
+      return { success: false, message: 'El código no es válido!' };
+    }
+
+    const { data: user } = await this.supabase
+      .from('users_leagues')
+      .select('*')
+      .eq('user_id', user_id)
+      .eq('league_id', id?.id)
+      .maybeSingle();
+
+    if (user) {
+      return { success: false, message: 'Ya estas en la liga!' };
+    }
+    const { error: insertError } = await this.supabase
+      .from('users_leagues')
+      .insert({
+        user_id: user_id.toLowerCase(),
+        league_id: id?.id,
+      });
+
+    if (insertError) {
+      return { success: false, message: 'Hubo un error al añadir al usuario' };
+    }
+
+    return { success: true, message: 'Te has unido a la liga!' };
+  }
 }
