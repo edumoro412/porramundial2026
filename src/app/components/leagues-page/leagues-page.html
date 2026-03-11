@@ -1,7 +1,8 @@
+@if(!this.loading()){
+
 <div class="leagues">
   <h1 class="leagues__title">Ligas</h1>
 
-  <!-- Mis ligas -->
   <section class="leagues__section">
     <h2 class="leagues__section--title">Mis ligas</h2>
     <div class="leagues__grid">
@@ -38,7 +39,6 @@
     </div>
   </section>
 
-  <!-- Crear liga -->
   <section class="leagues__section">
     <h2 class="leagues__section--title">Crear liga</h2>
     <div class="leagues__section--card">
@@ -94,7 +94,6 @@
     </div>
   </section>
 
-  <!-- Unirse a liga -->
   <section class="leagues__section">
     <h2 class="leagues__section--title">Unirse a una liga</h2>
     <div class="leagues__section--card">
@@ -110,3 +109,13 @@
     </div>
   </section>
 </div>
+} @if(this.loading()){
+<div class="loading">
+  <img
+    src="loading.gif"
+    alt="Loading gif"
+    title="Gif de carga"
+    class="loading__gif"
+  />
+</div>
+}
