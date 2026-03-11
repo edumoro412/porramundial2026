@@ -8,3 +8,8 @@ export interface Liga {
   code: string;
   creator: string;
 }
+
+export interface LigaContent extends Liga {
+  players: number;
+  id: string;
+}
