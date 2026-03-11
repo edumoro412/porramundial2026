@@ -89,7 +89,7 @@
         class="leagues__section--button"
         (click)="crearLiga(nombreliga.value!, codigo.textContent!.trim())"
       >
-        Crear liga
+        {{this.creando() ? 'Creando liga...' : 'Crear liga'}}
       </button>
     </div>
   </section>
@@ -103,9 +103,19 @@
           type="text"
           class="leagues__section--input"
           placeholder="Ej: ABC-1234"
+          #codePaste
+          (change)="this.errorJoinMsg.set('')"
         />
       </div>
-      <button class="leagues__section--button">Unirse</button>
+      @if(this.errorJoinMsg()){
+      <small class="error">{{this.errorJoinMsg()}}</small>
+      }
+      <button
+        class="leagues__section--button"
+        (click)="joinLiga(codePaste.value.trim())"
+      >
+        Unirse
+      </button>
     </div>
   </section>
 </div>

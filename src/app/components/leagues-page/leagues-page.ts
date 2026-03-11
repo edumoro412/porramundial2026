@@ -13,7 +13,9 @@ import { Router } from '@angular/router';
 })
 export class LeaguesPage implements OnInit {
   errorMsg = signal('');
+  errorJoinMsg = signal('');
   invitationcode = signal('');
+  creando = signal(false);
   loading = signal(false);
   liga: Liga | null = null;
   user: UserSimple | null = null;
@@ -42,6 +44,7 @@ export class LeaguesPage implements OnInit {
   }
 
   async crearLiga(nombre: string, code: any) {
+    this.creando.set(true);
     if (!this.user) {
       return;
     }
@@ -55,12 +58,18 @@ export class LeaguesPage implements OnInit {
       creator: this.user.id,
     };
 
-    const response = await this.auth.crearLiga(this.liga);
-    if (!response.success) {
-      this.errorMsg.set(response.message);
-      return;
+    try {
+      const response = await this.auth.crearLiga(this.liga);
+      if (!response.success) {
+        this.errorMsg.set(response.message);
+        return;
+      }
+      alert('Liga creada con exito!');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.creando.set(false);
     }
-    alert('Liga creada con exito!');
   }
 
   codeCreator(): void {
@@ -81,5 +90,21 @@ export class LeaguesPage implements OnInit {
     navigator.clipboard.writeText(texto).then(() => {
       alert('Codigo copiado');
     });
+  }
+
+  async joinLiga(code: string) {
+    const user_id = this.user?.id;
+    if (!user_id) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    const response = await this.auth.unirLiga(code, user_id);
+    if (!response.success) {
+      this.errorJoinMsg.set(response.message);
+      return;
+    }
+    alert(response.message);
+    return;
   }
 }
