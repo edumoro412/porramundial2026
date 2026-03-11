@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environments';
-import { Liga, RegisterResponse } from '../app/interface/response';
+import { Liga, LigaContent, RegisterResponse } from '../app/interface/response';
 import { UserSimple } from '../app/interface/user';
 
 @Injectable({
@@ -262,5 +262,42 @@ export class AuthService {
     }
 
     return { success: true, message: 'Te has unido a la liga!' };
+  }
+
+  async getLigas(user_id: string): Promise<LigaContent[] | null> {
+    let arrayLigas: LigaContent[] = [];
+    const { data: leagues_id } = await this.supabase
+      .from('users_leagues')
+      .select('league_id')
+      .eq('user_id', user_id);
+    if (leagues_id && leagues_id.length <= 0) {
+      return null;
+    }
+
+    for (const league of leagues_id!) {
+      const { data } = await this.supabase
+        .from('leagues')
+        .select('*')
+        .eq('id', league.league_id);
+
+      if (!data || data.length === 0) {
+        continue;
+      } else {
+        const { count } = await this.supabase
+          .from('users_leagues')
+          .select('*', { count: 'exact', head: true })
+          .eq('league_id', league.league_id);
+
+        arrayLigas.push({
+          name: data[0].name,
+          creator: data[0].creator,
+          code: data[0].code,
+          id: league.league_id,
+          players: count ?? 0,
+        });
+      }
+    }
+
+    return arrayLigas;
   }
 }
