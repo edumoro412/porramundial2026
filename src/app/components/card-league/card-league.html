@@ -1,0 +1,20 @@
+<section class="league-card">
+  <div class="league-card__title">
+    <h3 class="league-card__title--title">{{liga().name.toUpperCase()}}</h3>
+
+    @if(liga().creator == user_id()){
+    <span class="league-card__title--tag">CREADOR</span>
+    }
+  </div>
+
+  <div class="league-card__info">
+    <span class="league-card__players">👥 {{liga().players}} jugadores</span>
+  </div>
+  <div class="league-card__code">
+    <span
+      class="league-card__code-code"
+      (click)="onCopy.emit(liga().code.toUpperCase())"
+      >{{liga().code.toUpperCase()}}</span
+    >
+  </div>
+</section>
