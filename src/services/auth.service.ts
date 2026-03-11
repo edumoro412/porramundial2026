@@ -172,7 +172,7 @@ export class AuthService {
       .select('name')
       .eq('name', liga.name.toLowerCase());
 
-    if (nombre) {
+    if (nombre && nombre.length > 0) {
       return { success: false, message: 'Este nombre de liga esta ya en uso' };
     }
 
@@ -181,8 +181,8 @@ export class AuthService {
       .select('code')
       .eq('code', liga.code.toLowerCase());
 
-    if (nombre) {
-      return { success: false, message: 'Este codeigo de liga esta ya en uso' };
+    if (codigo && codigo.length > 0) {
+      return { success: false, message: 'Este codigo de liga esta ya en uso' };
     }
 
     const user = await this.getCurrentSimpleUser();
@@ -193,14 +193,41 @@ export class AuthService {
       };
     }
 
-    const { data: creada } = await this.supabase.from('leagues').insert({
+    const { data: creada, error } = await this.supabase.from('leagues').insert({
       code: liga.code.toLowerCase(),
       name: liga.name.toLowerCase(),
-      cretor: user.id,
+      creator: user.id,
     });
 
-    if (!creada) {
+    if (error) {
       return { success: false, message: 'Ocurrió un error al crear la liga' };
+    }
+
+    const { data: id, error: errorId } = await this.supabase
+      .from('leagues')
+      .select('id')
+      .eq('name', liga.name)
+      .maybeSingle();
+
+    if (errorId) {
+      return {
+        success: false,
+        message: 'Hubo un error al intentar recoger el id',
+      };
+    }
+
+    const { error: userLeaguesError } = await this.supabase
+      .from('users_leagues')
+      .insert({
+        user_id: user.id,
+        league_id: id?.id,
+      });
+
+    if (userLeaguesError) {
+      return {
+        success: false,
+        message: 'Ocurrió un error al añadir el jugador a la liga',
+      };
     }
     return {
       success: true,
@@ -208,4 +235,6 @@ export class AuthService {
         'La liga fue creada con éxito. Comparte el código con tus amigos!',
     };
   }
+
+  async unirLiga(code: string) {}
 }
