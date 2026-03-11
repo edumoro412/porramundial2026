@@ -49,6 +49,7 @@
           class="leagues__section--input"
           placeholder="Ej: Los Cracks"
           #nombreliga
+          (change)="this.errorMsg.set('')"
         />
       </div>
       <div class="leagues__section--field">
@@ -57,13 +58,25 @@
           <span class="leagues__section--code-value" #codigo
             >{{invitationcode()}}</span
           >
-          <button class="leagues__section--code-copy">
-            <img
-              src="/icons/copy-icon.svg"
-              alt="Imagen de copiar"
-              class="leagues__section--code-copy-img"
-            />
-          </button>
+          <span class="leagues__section--code-buttons">
+            <button
+              class="leagues__section--code-copy"
+              (click)="copyToTheClipboard(codigo.textContent!.trim())"
+            >
+              <img
+                src="/icons/copy-icon.svg"
+                alt="Imagen de copiar"
+                class="leagues__section--code-copy-img"
+              />
+            </button>
+            <button class="leagues__section--code-copy" (click)="codeCreator()">
+              <img
+                src="/icons/reload.svg"
+                alt="Imagen de recargar codigo"
+                class="leagues__section--code-copy-img"
+              />
+            </button>
+          </span>
         </div>
         <small class="leagues__section--hint">
           Comparte este código con tus amigos para que se unan
@@ -74,8 +87,7 @@
       </div>
       <button
         class="leagues__section--button"
-        [disabled]="!nombreliga.value || !codigo.textContent"
-        (click)="crearLiga(nombreliga.value!, codigo.textContent!)"
+        (click)="crearLiga(nombreliga.value!, codigo.textContent!.trim())"
       >
         Crear liga
       </button>

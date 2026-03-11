@@ -92,6 +92,9 @@
       justify-content: space-between;
       align-items: center;
 
+      &-buttons {
+        display: flex;
+      }
       &-value {
         font-weight: 700;
         font-size: 1.1em;
@@ -244,6 +247,12 @@
   }
 }
 
+.error {
+  color: red;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+}
 @media (max-width: 700px) {
   .leagues {
     &__section {
