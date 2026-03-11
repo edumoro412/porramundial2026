@@ -48,6 +48,10 @@
       flex-wrap: wrap;
       justify-content: space-around;
       align-items: center;
+      &-msg {
+        color: var(--c-white);
+        font-weight: bold;
+      }
     }
 
     &--title {

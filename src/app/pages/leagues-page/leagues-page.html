@@ -5,14 +5,18 @@
   <section class="leagues__section">
     <h2 class="leagues__section--title">Mis ligas</h2>
     <div class="leagues__section--leagues">
-      @for(liga of leagues(); track liga.id ){
+      @if (!leagues() || leagues()?.length === 0) {
+      <p class="leagues__section--leagues-msg">
+        NO PARTICIPAS EN NINGUNA LIGA TODAVIA
+      </p>
+      }@else { @for(liga of leagues(); track liga.id ){
 
       <app-card-league
         [liga]="liga"
         [user_id]="this.user?.id!"
         (onCopy)="copyToTheClipboard($event)"
       ></app-card-league>
-      }
+      } }
     </div>
   </section>
   <section class="leagues__section">
