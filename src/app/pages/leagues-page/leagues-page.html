@@ -2,43 +2,19 @@
 
 <div class="leagues">
   <h1 class="leagues__title">Ligas</h1>
-
   <section class="leagues__section">
     <h2 class="leagues__section--title">Mis ligas</h2>
-    <div class="leagues__grid">
-      <div class="leagues__card">
-        <div class="leagues__card--header">
-          <span class="leagues__card--name">Los Cracks</span>
-          <span class="leagues__card--badge">Creador</span>
-        </div>
-        <div class="leagues__card--info">
-          <span class="leagues__card--players">👥 8 jugadores</span>
-          <div class="leagues__card--code">
-            <span class="leagues__card--code-value">ABC-1234</span>
-            <button class="leagues__card--code-copy" title="Copiar código">
-              Copiar
-            </button>
-          </div>
-        </div>
-      </div>
+    <div class="leagues__section--leagues">
+      @for(liga of leagues(); track liga.id ){
 
-      <div class="leagues__card">
-        <div class="leagues__card--header">
-          <span class="leagues__card--name">Premier Amigos</span>
-        </div>
-        <div class="leagues__card--info">
-          <span class="leagues__card--players">👥 5 jugadores</span>
-          <div class="leagues__card--code">
-            <span class="leagues__card--code-value">XYZ-5678</span>
-            <button class="leagues__card--code-copy" title="Copiar código">
-              Copiar
-            </button>
-          </div>
-        </div>
-      </div>
+      <app-card-league
+        [liga]="liga"
+        [user_id]="this.user?.id!"
+        (onCopy)="copyToTheClipboard($event)"
+      ></app-card-league>
+      }
     </div>
   </section>
-
   <section class="leagues__section">
     <h2 class="leagues__section--title">Crear liga</h2>
     <div class="leagues__section--card">

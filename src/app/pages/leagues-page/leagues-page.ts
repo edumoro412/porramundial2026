@@ -1,24 +1,26 @@
 import { Component, signal } from '@angular/core';
 import { OnInit } from '@angular/core';
-import { Liga } from '../../interface/response';
+import { Liga, LigaContent } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { UserSimple } from '../../interface/user';
 import { Router } from '@angular/router';
+import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
   selector: 'app-leagues-page',
-  imports: [],
+  imports: [CardLeague],
   templateUrl: './leagues-page.html',
   styleUrl: './leagues-page.scss',
 })
 export class LeaguesPage implements OnInit {
-  errorMsg = signal('');
-  errorJoinMsg = signal('');
-  invitationcode = signal('');
-  creando = signal(false);
-  loading = signal(false);
+  errorMsg = signal<string>('');
+  errorJoinMsg = signal<string>('');
+  invitationcode = signal<string>('');
+  creando = signal<boolean>(false);
+  loading = signal<boolean>(false);
   liga: Liga | null = null;
   user: UserSimple | null = null;
+  leagues = signal<LigaContent[] | null>(null);
 
   /*   falta crear y comprobar que funciona el crearLiga, falta quitar las ligas de ejemplo y crear una funcion para traerse las ligas a las que pertenece el usuario, falta un boton para al darle que te cree un nuevo codigo, falta que el boton de copiar funcione, y falta la funcion de unirse a liga teniendo en cuenta que no puede unirse un usuario que ya esta unido */
 
@@ -35,7 +37,9 @@ export class LeaguesPage implements OnInit {
       this.user = await this.auth.getCurrentSimpleUser();
       if (!this.user) {
         this.router.navigateByUrl('/login');
+        return;
       }
+      await this.obtenerLigas(this.user.id);
     } catch (err) {
       console.error(err);
     } finally {
@@ -69,6 +73,8 @@ export class LeaguesPage implements OnInit {
       console.error(error);
     } finally {
       this.creando.set(false);
+      this.codeCreator();
+      this.obtenerLigas(this.user.id);
     }
   }
 
@@ -105,6 +111,15 @@ export class LeaguesPage implements OnInit {
       return;
     }
     alert(response.message);
+    this.obtenerLigas(user_id);
     return;
+  }
+
+  async obtenerLigas(code: string) {
+    if (!this.user) {
+      return;
+    }
+    const result = await this.auth.getLigas(this.user?.id);
+    this.leagues.set(result ?? []);
   }
 }

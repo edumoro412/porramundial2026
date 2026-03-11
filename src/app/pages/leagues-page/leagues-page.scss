@@ -1,5 +1,5 @@
 .loading {
-  min-height: 100dvh;
+  min-height: 85dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -40,6 +40,15 @@
     gap: 0.8em;
     width: 35%;
     box-sizing: border-box;
+
+    &--leagues {
+      width: 100%;
+      display: flex;
+      gap: 2em;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      align-items: center;
+    }
 
     &--title {
       font-size: 1.1em;
@@ -160,15 +169,6 @@
         transform: scale(1.03);
       }
     }
-  }
-
-  // Grid de ligas
-  &__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1em;
-    width: 35%;
-    box-sizing: border-box;
   }
 
   &__card {
