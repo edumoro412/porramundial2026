@@ -4,6 +4,6 @@ export interface UserSimple {
   id: string;
 }
 
-export interface User extends UserSimple {
+export interface UserSimples extends UserSimple {
   points?: number;
 }
