@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environments';
 import { Liga, LigaContent, RegisterResponse } from '../app/interface/response';
-import { UserSimple } from '../app/interface/user';
+import { UserSimple, UserSimples } from '../app/interface/user';
 
 @Injectable({
   providedIn: 'root',
@@ -299,5 +299,54 @@ export class AuthService {
     }
 
     return arrayLigas;
+  }
+
+  async getLiga(liga_id: string): Promise<LigaContent | null> {
+    const { data: liga } = await this.supabase
+      .from('leagues')
+      .select('*')
+      .eq('id', liga_id)
+      .maybeSingle();
+
+    if (!liga || liga.length === 0) {
+      return null;
+    }
+    return liga;
+  }
+
+  async numberOfPlayers(liga_id: string): Promise<number> {
+    const { count } = await this.supabase
+      .from('users_leagues')
+      .select('*', { count: 'exact', head: true })
+      .eq('league_id', liga_id);
+
+    return count ?? 0;
+  }
+
+  async getPlayers(liga_id: string): Promise<UserSimples[] | null> {
+    let players: UserSimples[] = [];
+    const { data: playersId } = await this.supabase
+      .from('users_leagues')
+      .select('user_id')
+      .eq('league_id', liga_id);
+
+    if (!playersId || playersId.length === 0) {
+      return null;
+    }
+    for (const playerId of playersId) {
+      const { data: profile } = await this.supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', playerId.user_id)
+        .maybeSingle();
+
+      //Los puntos los tenemos que coger en algun mometno
+      players.push({
+        ...profile,
+        points: 0,
+      });
+    }
+
+    return players;
   }
 }
