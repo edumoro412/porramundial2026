@@ -1,0 +1,115 @@
+.loading {
+  height: 85dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__gif {
+    width: 12.5em;
+  }
+}
+
+.league-detail {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2em;
+
+  &__header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 0.5em;
+    padding: 2em;
+    width: 70%;
+    border: 0.5px solid #378add;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(55, 138, 221, 0.1);
+    }
+    &--private {
+      color: #85b7eb;
+      padding: 0 0 1em 0;
+    }
+    &--title {
+      text-transform: uppercase;
+      padding: 0 0 1em 0;
+    }
+    &--info {
+      text-transform: uppercase;
+      display: flex;
+      gap: 2em;
+
+      &-code {
+        background-color: #1e2c4d;
+        border: 0.5px solid #378add;
+        padding: 0.2em 0.5em;
+        border-radius: 0.3em;
+        color: #85b7eb;
+        font-weight: bold;
+      }
+      &-players {
+        background-color: #1b313f;
+        border: 0.5px solid var(--c-primary);
+        padding: 0.2em 0.5em;
+        border-radius: 0.3em;
+        color: var(--c-primary);
+        font-weight: bold;
+      }
+    }
+  }
+  &__ranking {
+    margin-top: 2em;
+    width: 70%;
+    background-color: var(--c-secondary);
+    padding: 2em;
+    border-radius: 0.5em;
+
+    &--title {
+      padding: 0 0 1em 0;
+    }
+    &--player {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1em;
+      &-div {
+        display: flex;
+        background-color: var(--c-tertiary);
+        border-radius: 0.5em;
+        align-items: center;
+        justify-content: space-between;
+      }
+      &-info {
+        display: flex;
+        align-items: center;
+        gap: 2em;
+        padding: 1em;
+        &-img {
+          width: 4em;
+          height: 4em;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+        &-name {
+          font-weight: bold;
+        }
+        &:hover {
+          box-shadow: 0 0 2em var(--c-primary);
+        }
+        &-points-p {
+          font-weight: bold;
+          padding: 1em;
+        }
+      }
+    }
+  }
+}

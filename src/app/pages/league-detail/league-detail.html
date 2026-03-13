@@ -1,0 +1,47 @@
+@if(loading()){
+<div class="loading">
+  <img src="loading.gif" alt="Gif de loading" class="loading__gif" />
+</div>
+} @if(!loading()){
+<div class="league-detail">
+  <section class="league-detail__header">
+    <h5 class="league-detail__header--private">LIGA PRIVADA</h5>
+    <h2 class="league-detail__header--title">{{this.liga?.name}}</h2>
+    <article class="league-detail__header--info">
+      <div
+        class="league-detail__header--info-code"
+        (click)="copyToTheClipboard(this.liga?.code?.toUpperCase()?.toString()!)"
+      >
+        🔵 {{this.liga?.code?.toUpperCase()}}
+      </div>
+      <div class="league-detail__header--info-players">
+        🟢 {{this.liga?.players}} Jugadores
+      </div>
+    </article>
+  </section>
+  <section class="league-detail__ranking">
+    <h2 class="league-detail__ranking--title">RANKING</h2>
+    <div class="league-detail__ranking--player">
+      @for( player of players; track player.id){
+      <div class="league-detail__ranking--player-div">
+        <div class="league-detail__ranking--player-info">
+          <img
+            [src]="player.avatar_url ?? 'user_img.png'"
+            class="league-detail__ranking--player-info-img"
+          />
+          <p class="league-detail__ranking--player-info-name">
+            {{player.name}}
+          </p>
+        </div>
+        <div class="league-detail__ranking--player-info-points">
+          <p class="league-detail__ranking--player-info-points-p">
+            {{player.points ?? 0}} Pts.
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+  </section>
+</div>
+
+}
