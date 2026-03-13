@@ -15,6 +15,7 @@
     "user",
     "user-page",
     "leagues-page",
-    "card-league"
+    "card-league",
+    "league-detail"
   ]
 }
