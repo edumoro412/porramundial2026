@@ -10,6 +10,6 @@ export interface Liga {
 }
 
 export interface LigaContent extends Liga {
-  players: number;
+  players?: number;
   id: string;
 }

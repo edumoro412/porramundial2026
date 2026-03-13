@@ -3,3 +3,7 @@ export interface UserSimple {
   avatar_url?: string;
   id: string;
 }
+
+export interface User extends UserSimple {
+  points?: number;
+}
