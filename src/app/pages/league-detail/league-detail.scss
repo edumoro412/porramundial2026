@@ -6,6 +6,14 @@
 
   &__gif {
     width: 12.5em;
+
+    @media (max-width: 1024px) {
+      width: 9em;
+    }
+
+    @media (max-width: 768px) {
+      width: 7em;
+    }
   }
 }
 
@@ -16,6 +24,10 @@
   align-items: center;
   padding: 2em;
 
+  @media (max-width: 768px) {
+    padding: 1em;
+  }
+
   &__header {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     border-radius: 0.5em;
@@ -24,6 +36,11 @@
     border: 0.5px solid #378add;
     position: relative;
     overflow: hidden;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      padding: 1.2em;
+    }
 
     &::before {
       content: "";
@@ -35,18 +52,34 @@
       border-radius: 50%;
       background: rgba(55, 138, 221, 0.1);
     }
+
     &--private {
       color: #85b7eb;
       padding: 0 0 1em 0;
+
+      @media (max-width: 768px) {
+        font-size: 0.9em;
+      }
     }
+
     &--title {
       text-transform: uppercase;
       padding: 0 0 1em 0;
+
+      @media (max-width: 768px) {
+        font-size: 1.1em;
+      }
     }
+
     &--info {
       text-transform: uppercase;
       display: flex;
       gap: 2em;
+
+      @media (max-width: 768px) {
+        gap: 0.8em;
+        flex-wrap: wrap;
+      }
 
       &-code {
         background-color: #1e2c4d;
@@ -55,7 +88,12 @@
         border-radius: 0.3em;
         color: #85b7eb;
         font-weight: bold;
+
+        @media (max-width: 768px) {
+          font-size: 0.85em;
+        }
       }
+
       &-players {
         background-color: #1b313f;
         border: 0.5px solid var(--c-primary);
@@ -63,9 +101,14 @@
         border-radius: 0.3em;
         color: var(--c-primary);
         font-weight: bold;
+
+        @media (max-width: 768px) {
+          font-size: 0.85em;
+        }
       }
     }
   }
+
   &__ranking {
     margin-top: 2em;
     width: 70%;
@@ -73,41 +116,73 @@
     padding: 2em;
     border-radius: 0.5em;
 
+    @media (max-width: 768px) {
+      width: 100%;
+      padding: 1em;
+      margin-top: 1em;
+    }
+
     &--title {
       padding: 0 0 1em 0;
     }
+
     &--player {
       display: flex;
       justify-content: center;
       flex-direction: column;
       gap: 1em;
+
       &-div {
         display: flex;
         background-color: var(--c-tertiary);
         border-radius: 0.5em;
         align-items: center;
         justify-content: space-between;
+
+        &:hover {
+          box-shadow: 0 0 2em var(--c-primary);
+        }
       }
+
       &-info {
         display: flex;
         align-items: center;
         gap: 2em;
         padding: 1em;
+
+        @media (max-width: 768px) {
+          gap: 0.8em;
+          padding: 0.7em;
+        }
+
         &-img {
           width: 4em;
           height: 4em;
           object-fit: cover;
           border-radius: 50%;
+
+          @media (max-width: 768px) {
+            width: 3em;
+            height: 3em;
+          }
         }
+
         &-name {
           font-weight: bold;
+
+          @media (max-width: 768px) {
+            font-size: 0.9em;
+          }
         }
-        &:hover {
-          box-shadow: 0 0 2em var(--c-primary);
-        }
+
         &-points-p {
           font-weight: bold;
           padding: 1em;
+
+          @media (max-width: 768px) {
+            padding: 0.7em;
+            font-size: 0.9em;
+          }
         }
       }
     }
