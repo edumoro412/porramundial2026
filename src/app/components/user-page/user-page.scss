@@ -92,6 +92,7 @@
     }
   }
   &__logout {
+    padding: 0 0 2em 0;
     &--button {
       background-color: red;
       padding: 1em 3em;
@@ -105,7 +106,6 @@
         transform: scale(1.05);
       }
     }
-    padding: 0 0 2em 0;
   }
 }
 
@@ -116,6 +116,14 @@
   align-items: center;
   &__gif {
     width: 12.5em;
+
+    @media (max-width: 1024px) {
+      width: 9em;
+    }
+
+    @media (max-width: 768px) {
+      width: 7em;
+    }
   }
 }
 .label {
