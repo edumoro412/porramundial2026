@@ -50,12 +50,11 @@
     box-sizing: border-box;
 
     &--leagues {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1em;
       width: 100%;
-      display: flex;
-      gap: 2em;
-      flex-wrap: wrap;
-      justify-content: space-around;
-      align-items: center;
+
       &-msg {
         color: var(--c-white);
         font-weight: bold;
