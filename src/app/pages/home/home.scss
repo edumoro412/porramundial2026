@@ -5,6 +5,14 @@
   align-items: center;
   &__gif {
     width: 12.5em;
+
+    @media (max-width: 1024px) {
+      width: 9em;
+    }
+
+    @media (max-width: 768px) {
+      width: 7em;
+    }
   }
 }
 
