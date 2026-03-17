@@ -142,14 +142,14 @@
 @media (max-width: 700px) {
   .user {
     &__avatar {
-      width: 90%;
+      width: 80%;
       &--img {
         width: min(15em, 60vw);
         height: min(15em, 60vw);
       }
     }
     &__username {
-      width: 90%;
+      width: 80%;
       &--input {
         width: 100%;
         box-sizing: border-box;
@@ -164,11 +164,12 @@
     &__logout {
       width: 90%;
       box-sizing: border-box;
+      display: flex;
+      justify-content: center;
       &--button {
-        width: 100%;
         box-sizing: border-box;
-        padding: 1.5em 5em;
-        margin-bottom: 5em;
+        padding: 1.5em 4em;
+        margin-bottom: 7em;
       }
     }
   }
