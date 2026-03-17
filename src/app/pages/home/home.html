@@ -20,6 +20,24 @@
       </article>
     </section>
   </div>
+  <div class="home__content">
+    <section class="home__content--leagues">
+      <h2 class="home__content--leagues-title">TUS LIGAS:</h2>
+      <article class="home__content--leagues-league">
+        @if(!leagues() || leagues()?.length === 0){
+        <p>NO PARTICIPAS EN NINGUNA LIGA TODAVIA</p>
+        } @else{ @for(liga of leagues(); track liga.id){
+        <div class="home__content--leagues-league-card">
+          <app-card-league
+            [liga]="liga"
+            [user_id]="this.user?.id!"
+            (onCopy)="copyToTheClipboard($event)"
+          ></app-card-league>
+        </div>
+        }}
+      </article>
+    </section>
+  </div>
 </div>
 } @else{
 <div class="loading">

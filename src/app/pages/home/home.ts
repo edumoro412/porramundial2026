@@ -4,16 +4,24 @@ import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { UserSimple } from '../../interface/user';
 import { interval, Subscription } from 'rxjs';
+import { LigaContent } from '../../interface/response';
+import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, CardLeague],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
 export class Home implements OnInit, OnDestroy {
+  copyToTheClipboard(texto: string) {
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('Codigo copiado');
+    });
+  }
   loading = signal(true);
   user: UserSimple | null = null;
+  leagues = signal<LigaContent[] | null>(null);
 
   days = signal('000');
   hours = signal('00');
@@ -36,6 +44,14 @@ export class Home implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.user?.id) {
+      await this.router.navigateByUrl('/login');
+      return;
+    }
+    const ligas = await this.auth.getLigas(this.user?.id);
+    console.log('Estas son la sligas', ligas);
+    this.leagues.set(ligas ?? []);
+    console.log('prueba', this.leagues());
     this.loading.set(false);
 
     this.updateCountdown();
