@@ -349,4 +349,17 @@ export class AuthService {
 
     return players;
   }
+
+  async DeleteLeague(liga_id: string): Promise<any> {
+    console.log('Este es el servicio y este es el id: ', liga_id);
+    const { data, error } = await this.supabase
+      .from('leagues')
+      .delete()
+      .eq('id', liga_id)
+      .select();
+
+    if (error) throw error;
+
+    return data;
+  }
 }
