@@ -20,8 +20,6 @@ export class LeagueDetail implements OnInit {
   user: UserSimples | null = null;
   modalOpen = signal<boolean>(false);
 
-  //Tengo que guardar el players, y llamar a la funcion getPlayers
-
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -59,5 +57,18 @@ export class LeagueDetail implements OnInit {
     navigator.clipboard.writeText(texto).then(() => {
       alert('Codigo copiado');
     });
+  }
+
+  async borrarLiga() {
+    try {
+      if (this.liga) {
+        console.log(this.liga.id);
+        await this.auth.DeleteLeague(this.liga?.id);
+        console.log('Liga eliminada');
+        this.router.navigateByUrl('/leagues');
+      }
+    } catch (error) {
+      console.log('Ocurrio un error: ', error);
+    }
   }
 }

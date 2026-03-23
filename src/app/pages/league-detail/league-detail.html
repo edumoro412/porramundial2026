@@ -51,7 +51,10 @@
     </button>
   </div>
   } @if(modalOpen()){
-  <app-delete-league></app-delete-league>
+  <app-delete-league
+    (cancelled)="modalOpen.set(false)"
+    (confirmed)="borrarLiga()"
+  ></app-delete-league>
   }
 </div>
 
