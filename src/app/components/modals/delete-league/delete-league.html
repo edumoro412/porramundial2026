@@ -22,8 +22,12 @@
     </p>
 
     <div class="modal-box__buttons">
-      <button class="modal-box__buttons--denied">No, cancelar</button>
-      <button class="modal-box__buttons--accept">Sí, eliminar</button>
+      <button class="modal-box__buttons--denied" (click)="cancelled.emit()">
+        No, cancelar
+      </button>
+      <button class="modal-box__buttons--accept" (click)="confirmed.emit()">
+        Sí, eliminar
+      </button>
     </div>
   </div>
 </div>

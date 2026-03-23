@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, output } from '@angular/core';
 
 @Component({
   selector: 'app-delete-league',
@@ -7,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrl: './delete-league.scss',
 })
 export class DeleteLeague {
-
+  cancelled = output<void>();
+  confirmed = output<void>();
 }
