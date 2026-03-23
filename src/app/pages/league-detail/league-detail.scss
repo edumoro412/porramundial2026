@@ -187,4 +187,20 @@
       }
     }
   }
+  &__delete {
+    margin: 2em;
+    &--button {
+      background-color: red;
+      padding: 1em 3em;
+      border: none;
+      border-radius: 0.5em;
+      font-weight: bold;
+      transition: 0.3s all ease-in-out;
+      text-transform: uppercase;
+      &:hover {
+        box-shadow: 0 0 1.5em red;
+        transform: scale(1.05);
+      }
+    }
+  }
 }

@@ -4,10 +4,11 @@ import { AuthService } from '../../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LigaContent } from '../../interface/response';
 import { UserSimples } from '../../interface/user';
+import { DeleteLeague } from '../../components/modals/delete-league/delete-league';
 
 @Component({
   selector: 'app-league-detail',
-  imports: [],
+  imports: [DeleteLeague],
   templateUrl: './league-detail.html',
   styleUrl: './league-detail.scss',
 })
@@ -16,6 +17,9 @@ export class LeagueDetail implements OnInit {
   private route = inject(ActivatedRoute);
   liga: LigaContent | null = null;
   players: UserSimples[] | null = null;
+  user: UserSimples | null = null;
+  modalOpen = signal<boolean>(false);
+
   //Tengo que guardar el players, y llamar a la funcion getPlayers
 
   constructor(
@@ -24,8 +28,8 @@ export class LeagueDetail implements OnInit {
   ) {}
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
-    const user = this.auth.getCurrentSimpleUser();
-    if (!user) {
+    this.user = await this.auth.getCurrentSimpleUser();
+    if (!this.user) {
       this.router.navigateByUrl('/login');
     }
 

@@ -26,6 +26,7 @@
       <div class="league-detail__ranking--player-div">
         <div class="league-detail__ranking--player-info">
           <img
+            loading="lazy"
             [src]="player.avatar_url ?? 'user_img.png'"
             class="league-detail__ranking--player-info-img"
           />
@@ -42,6 +43,16 @@
       }
     </div>
   </section>
+  @if(this.user?.id == liga?.creator){
+
+  <div class="league-detail__delete">
+    <button class="league-detail__delete--button" (click)="modalOpen.set(true)">
+      Borrar liga
+    </button>
+  </div>
+  } @if(modalOpen()){
+  <app-delete-league></app-delete-league>
+  }
 </div>
 
 }
