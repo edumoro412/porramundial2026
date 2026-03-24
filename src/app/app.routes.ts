@@ -6,6 +6,7 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { UserPage } from './components/user-page/user-page';
 import { LeaguesPage } from './pages/leagues-page/leagues-page';
 import { LeagueDetail } from './pages/league-detail/league-detail';
+import { Matches } from './pages/matches/matches';
 
 export const routes: Routes = [
   {
@@ -27,6 +28,10 @@ export const routes: Routes = [
       {
         path: 'leagues/:id',
         component: LeagueDetail,
+      },
+      {
+        path: 'matches',
+        component: Matches,
       },
     ],
   },
