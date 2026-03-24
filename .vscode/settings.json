@@ -17,6 +17,7 @@
     "leagues-page",
     "card-league",
     "league-detail",
-    "delete-league"
+    "delete-league",
+    "matches"
   ]
 }
