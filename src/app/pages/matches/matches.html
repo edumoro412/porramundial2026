@@ -1,9 +1,42 @@
 <div class="matches">
   <div class="matches__header">
-    <button>Fase de grupos</button>
-    <button>Octavos</button>
-    <button>Cuartos</button>
-    <button>Semifinales</button>
-    <button>Final</button>
+    <button class="matches__header--button">Fase de grupos</button>
+    <button class="matches__header--button">Octavos</button>
+    <button class="matches__header--button">Cuartos</button>
+    <button class="matches__header--button">Semifinales</button>
+    <button class="matches__header--button">Final</button>
+  </div>
+
+  <div class="matches__matches">
+    @for(match of this.matches(); track match.match_id){
+    <div class="matches__matches--match">
+      <div class="matches__matches--match-home">
+        <img
+          [src]="match.home_team_img"
+          alt="Imagen de el home team"
+          [title]="match.home_team_name"
+          class="matches__matches--match-img"
+        />
+        <p class="matches__matches--match-shortname">
+          {{match.home_team_short_name}}
+        </p>
+      </div>
+      <div class="matches__matches--match-time">
+        <p>{{formatKickoff(match.kickoff_time)}}</p>
+      </div>
+      <div class="matches__matches--match-home">
+        <img
+          [src]="match.away_team_img"
+          alt="Imagen de el home team"
+          [title]="match.away_team_name"
+          class="matches__matches--match-img"
+        />
+        <p class="matches__matches--match-shortname">
+          {{match.away_team_short_name}}
+        </p>
+      </div>
+    </div>
+
+    }
   </div>
 </div>

@@ -1,0 +1,59 @@
+.matches {
+  &__header {
+    padding: 1em 2em;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0.5em;
+
+    &--button {
+      border: none;
+      padding: 0.5em 1.5em;
+      border-radius: 0.5em;
+      text-transform: uppercase;
+      background-color: var(--c-primary);
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s all ease-in-out;
+
+      &:hover {
+        translate: 0px -3px;
+      }
+    }
+  }
+
+  &__matches {
+    background-color: var(--c-secondary);
+    margin: 1.5em;
+    border-radius: 0.75em;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+    padding: 1em;
+
+    &--match {
+      display: flex;
+      align-items: center;
+      padding: 1em;
+      justify-content: space-around;
+      background-color: var(--c-fourth);
+      border-radius: 0.5em;
+
+      &-home {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3em;
+      }
+
+      &-shortname {
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+
+      &-img {
+        width: 3em;
+      }
+    }
+  }
+}
