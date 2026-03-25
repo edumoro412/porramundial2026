@@ -368,12 +368,14 @@ export class AuthService {
     return data;
   }
 
-  async getMatches(): Promise<MatchContent[] | null> {
+  async getMatches(phase?: string): Promise<MatchContent[] | null> {
     //Aqui hacemos un join, home_team es el alias tras los : va la tabla de dodne queremos sacar info que es teams. Y luego la sintaxis es tabla_columna_fkey, por eso es matches_home_team_id_fkey
-    const { data, error } = await this.supabase
-      .from('matches')
-      .select(
-        `
+
+    if (phase) {
+      const { data, error } = await this.supabase
+        .from('matches')
+        .select(
+          `
       match_id,
       phase,
       real_score_home,
@@ -387,27 +389,96 @@ export class AuthService {
         team_id, name, short_name, flag_url
       )
     `,
-      )
-      .order('kickoff_time', { ascending: true });
+        )
+        .eq('phase', phase)
+        .order('kickoff_time', { ascending: true });
 
-    if (error) throw error;
-    if (!data || data.length === 0) return null;
+      if (error) throw error;
+      if (!data || data.length === 0) return null;
 
-    return data.map((m: any) => ({
-      match_id: m.match_id,
-      phase: m.phase,
-      real_score_home: m.real_score_home,
-      real_score_away: m.real_score_away,
-      played_at: m.played_at,
-      kickoff_time: m.kickoff_time,
-      home_team_id: m.home_team.team_id,
-      home_team_name: m.home_team.name,
-      home_team_short_name: m.home_team.short_name,
-      home_team_img: m.home_team.flag_url,
-      away_team_id: m.away_team.team_id,
-      away_team_name: m.away_team.name,
-      away_team_short_name: m.away_team.short_name,
-      away_team_img: m.away_team.flag_url,
-    }));
+      return data.map((m: any) => ({
+        match_id: m.match_id,
+        phase: m.phase,
+        real_score_home: m.real_score_home,
+        real_score_away: m.real_score_away,
+        played_at: m.played_at,
+        kickoff_time: m.kickoff_time,
+        home_team_id: m.home_team.team_id,
+        home_team_name: m.home_team.name,
+        home_team_short_name: m.home_team.short_name,
+        home_team_img: m.home_team.flag_url,
+        away_team_id: m.away_team.team_id,
+        away_team_name: m.away_team.name,
+        away_team_short_name: m.away_team.short_name,
+        away_team_img: m.away_team.flag_url,
+      }));
+    } else {
+      const { data, error } = await this.supabase
+        .from('matches')
+        .select(
+          `
+        match_id,
+        phase,
+        real_score_home,
+        real_score_away,
+        played_at,
+        kickoff_time,
+        home_team:teams!matches_home_team_id_fkey (
+          team_id, name, short_name, flag_url
+        ),
+        away_team:teams!matches_away_team_id_fkey (
+          team_id, name, short_name, flag_url
+        )
+      `,
+        )
+        .order('kickoff_time', { ascending: true });
+
+      if (error) throw error;
+      if (!data || data.length === 0) return null;
+
+      return data.map((m: any) => ({
+        match_id: m.match_id,
+        phase: m.phase,
+        real_score_home: m.real_score_home,
+        real_score_away: m.real_score_away,
+        played_at: m.played_at,
+        kickoff_time: m.kickoff_time,
+        home_team_id: m.home_team.team_id,
+        home_team_name: m.home_team.name,
+        home_team_short_name: m.home_team.short_name,
+        home_team_img: m.home_team.flag_url,
+        away_team_id: m.away_team.team_id,
+        away_team_name: m.away_team.name,
+        away_team_short_name: m.away_team.short_name,
+        away_team_img: m.away_team.flag_url,
+      }));
+    }
+  }
+
+  async sendMatchPrediction(
+    match_id: number,
+    score_home: number,
+    score_away: number,
+    user_id: string,
+    sign: string,
+  ): Promise<RegisterResponse> {
+    const { data, error } = await this.supabase
+      .from('match_predictions')
+      .insert({
+        user_id: user_id,
+        predicted_score_home: score_home,
+        predicted_score_away: score_away,
+        predicted_sign: sign,
+        match_id: match_id,
+      });
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Hubo un error al insertar la predicción',
+      };
+    } else {
+      return { success: true, message: 'Predicción guardada!' };
+    }
   }
 }
