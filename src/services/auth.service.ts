@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
 import { createClient, User } from '@supabase/supabase-js';
 import { environment } from '../environments/environments';
-import { Liga, LigaContent, RegisterResponse } from '../app/interface/response';
+import {
+  Liga,
+  LigaContent,
+  MatchContent,
+  RegisterResponse,
+} from '../app/interface/response';
 import { UserSimple, UserSimples } from '../app/interface/user';
 
 @Injectable({
@@ -361,5 +366,48 @@ export class AuthService {
     if (error) throw error;
 
     return data;
+  }
+
+  async getMatches(): Promise<MatchContent[] | null> {
+    //Aqui hacemos un join, home_team es el alias tras los : va la tabla de dodne queremos sacar info que es teams. Y luego la sintaxis es tabla_columna_fkey, por eso es matches_home_team_id_fkey
+    const { data, error } = await this.supabase
+      .from('matches')
+      .select(
+        `
+      match_id,
+      phase,
+      real_score_home,
+      real_score_away,
+      played_at,
+      kickoff_time,
+      home_team:teams!matches_home_team_id_fkey (
+        team_id, name, short_name, flag_url
+      ),
+      away_team:teams!matches_away_team_id_fkey (
+        team_id, name, short_name, flag_url
+      )
+    `,
+      )
+      .order('kickoff_time', { ascending: true });
+
+    if (error) throw error;
+    if (!data || data.length === 0) return null;
+
+    return data.map((m: any) => ({
+      match_id: m.match_id,
+      phase: m.phase,
+      real_score_home: m.real_score_home,
+      real_score_away: m.real_score_away,
+      played_at: m.played_at,
+      kickoff_time: m.kickoff_time,
+      home_team_id: m.home_team.team_id,
+      home_team_name: m.home_team.name,
+      home_team_short_name: m.home_team.short_name,
+      home_team_img: m.home_team.flag_url,
+      away_team_id: m.away_team.team_id,
+      away_team_name: m.away_team.name,
+      away_team_short_name: m.away_team.short_name,
+      away_team_img: m.away_team.flag_url,
+    }));
   }
 }
