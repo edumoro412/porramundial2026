@@ -1,3 +1,9 @@
+@if(this.loading()){
+<div class="loading">
+  <img src="loading.gif" class="loading__gif" alt="" />
+</div>
+} @if(!this.loading()){
+
 <div class="matches">
   <div class="matches__header">
     <button class="matches__header--button">Fase de grupos</button>
@@ -76,3 +82,4 @@
     }
   </div>
 </div>
+}

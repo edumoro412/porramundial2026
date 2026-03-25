@@ -1,3 +1,20 @@
+.loading {
+  min-height: 85dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &__gif {
+    width: 12.5em;
+
+    @media (max-width: 1024px) {
+      width: 9em;
+    }
+
+    @media (max-width: 768px) {
+      width: 7em;
+    }
+  }
+}
 .matches {
   &__header {
     padding: 1em 2em;
