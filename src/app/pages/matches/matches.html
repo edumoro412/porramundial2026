@@ -77,6 +77,7 @@
             max="99"
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
+            [value]="this.predictions().get(match.match_id)?.score_home"
           />
           <span class="matches__matches--prediction-span"> - </span>
           <input
@@ -86,6 +87,7 @@
             max="99"
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
+            [value]="this.predictions().get(match.match_id)?.score_away"
           />
         </div>
         <select
@@ -93,6 +95,7 @@
           [id]="match.match_id+'-select'"
           class="matches__matches--prediction-input"
           (change)="clearError(match.match_id)"
+          [value]="this.predictions().get(match.match_id)?.sign"
         >
           <option value="X">X</option>
           <option value="1">1</option>

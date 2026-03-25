@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { MatchContent } from '../../interface/response';
+import { MatchContent, Prediction } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
@@ -18,6 +18,7 @@ export class Matches implements OnInit {
   matches = signal<MatchContent[]>([]);
   loading = signal<boolean>(false);
   errorMesage = signal<Map<number, string>>(new Map());
+  predictions = signal<Map<number, Prediction>>(new Map());
 
   constructor(
     private auth: AuthService,
@@ -27,13 +28,35 @@ export class Matches implements OnInit {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
+      const user = await this.auth.getCurrentSimpleUser();
+      if (!user?.id) {
+        this.router.navigateByUrl('/login');
+        return;
+      }
       const response: MatchContent[] | null = await this.auth.getMatches(
         this.phase(),
       );
+
       if (!response || response.length === 0) {
         return;
       }
       this.matches.set(response);
+
+      const map = new Map<number, Prediction>();
+
+      for (const match of response) {
+        const predict = await this.auth.getMatchPrediction(
+          match.match_id,
+          user.id,
+        );
+
+        if (predict) {
+          map.set(match.match_id, predict);
+        }
+      }
+
+      this.predictions.set(map);
+
       console.log(this.matches());
       this.updateCountdowns();
       this.countdownSub = interval(1000).subscribe(() =>

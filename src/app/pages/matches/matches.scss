@@ -16,10 +16,14 @@
     }
   }
 }
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 .matches {
-  // 🔥 SOLUCIÓN HEADER QUE TAPA CONTENIDO
-  padding-bottom: 5em; // espacio para que no tape el último botón
+  padding-bottom: 5em;
 
   &__header {
     padding: 1em 2em;
@@ -142,7 +146,6 @@
         padding: 1em;
       }
 
-      // 🔥 INPUTS MEJORADOS
       &-input {
         border: none;
         padding: 0.4em 0.8em;
