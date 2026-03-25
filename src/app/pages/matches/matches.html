@@ -10,33 +10,69 @@
   <div class="matches__matches">
     @for(match of this.matches(); track match.match_id){
     <div class="matches__matches--match">
-      <div class="matches__matches--match-home">
-        <img
-          [src]="match.home_team_img"
-          alt="Imagen de el home team"
-          [title]="match.home_team_name"
-          class="matches__matches--match-img"
-        />
-        <p class="matches__matches--match-shortname">
-          {{match.home_team_short_name}}
-        </p>
+      <div class="matches__matches--teams">
+        <div class="matches__matches--match-home">
+          <img
+            [src]="match.home_team_img"
+            alt="Home team"
+            class="matches__matches--match-img"
+          />
+          <p class="matches__matches--match-shortname">
+            {{match.home_team_short_name}}
+          </p>
+        </div>
+
+        <div class="matches__matches--result">
+          @if (match.real_score_home && match.real_score_away) {
+          <p class="result">
+            {{ match.real_score_home }}-{{ match.real_score_away }}
+          </p>
+          } @else if (isLessThan24h(match.kickoff_time)) {
+          <p class="countdown">{{ countdowns().get(match.match_id) }}</p>
+          } @else {
+          <p>{{ formatKickoff(match.kickoff_time) }}</p>
+          }
+        </div>
+
+        <div class="matches__matches--match-home">
+          <img
+            [src]="match.away_team_img"
+            alt="Away team"
+            class="matches__matches--match-img"
+          />
+          <p class="matches__matches--match-shortname">
+            {{match.away_team_short_name}}
+          </p>
+        </div>
       </div>
-      <div class="matches__matches--match-time">
-        <p>{{formatKickoff(match.kickoff_time)}}</p>
-      </div>
-      <div class="matches__matches--match-home">
-        <img
-          [src]="match.away_team_img"
-          alt="Imagen de el home team"
-          [title]="match.away_team_name"
-          class="matches__matches--match-img"
-        />
-        <p class="matches__matches--match-shortname">
-          {{match.away_team_short_name}}
-        </p>
+
+      <div class="matches__matches--prediction">
+        <p class="matches__matches--prediction-title">Tu predicción</p>
+        <div>
+          <input
+            [id]="match.match_id+'-home'"
+            type="number"
+            min="0"
+            max="99"
+            class="matches__matches--prediction-input"
+          />
+          <span class="matches__matches--prediction-span"> - </span>
+          <input
+            [id]="match.match_id+'-away'"
+            type="number"
+            min="0"
+            max="99"
+            class="matches__matches--prediction-input"
+          />
+        </div>
+        <button
+          class="matches__matches--prediction-button"
+          [id]="match.match_id"
+        >
+          Enviar
+        </button>
       </div>
     </div>
-
     }
   </div>
 </div>

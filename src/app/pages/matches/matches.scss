@@ -28,32 +28,89 @@
     border-radius: 0.75em;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1em;
-    padding: 1em;
+    gap: 1.2em;
+    padding: 1.5em;
 
     &--match {
       display: flex;
-      align-items: center;
-      padding: 1em;
-      justify-content: space-around;
+      flex-direction: column;
       background-color: var(--c-fourth);
       border-radius: 0.5em;
+      padding: 1em;
+      gap: 0.8em;
+    }
 
-      &-home {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.3em;
+    &--teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    &--match-home {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3em;
+    }
+
+    &--match-shortname {
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    &--match-img {
+      width: 3em;
+    }
+
+    &--result {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+      min-width: 60px;
+    }
+
+    &--prediction {
+      border-top: 1px solid var(--c-secondary);
+      text-align: center;
+      color: #888;
+      font-size: 0.95em;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      &-title {
+        padding: 1em;
       }
-
-      &-shortname {
+      &-input {
+        border: none;
+        padding: 0.2em 0.5em;
+        background-color: var(--c-secondary);
+        color: var(--c-white);
         font-weight: bold;
-        font-size: 0.9em;
+        text-align: center;
+        border-radius: 0.75em;
       }
-
-      &-img {
-        width: 3em;
+      &-span {
+        font-weight: bold;
+        font-size: 1.5em;
+      }
+      &-button {
+        margin-top: 1em;
+        background-color: var(--c-primary);
+        border: none;
+        border-radius: 0.75em;
+        padding: 0.3em 1.5em;
+        color: var(--c-black);
+        font-weight: bold;
+        text-transform: uppercase;
       }
     }
   }
+}
+
+.countdown,
+.result {
+  color: var(--c-primary);
 }
