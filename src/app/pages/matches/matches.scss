@@ -108,6 +108,7 @@
         font-weight: bold;
         text-align: center;
         border-radius: 0.75em;
+        margin: 0.5em;
       }
       &-span {
         font-weight: bold;
@@ -130,4 +131,9 @@
 .countdown,
 .result {
   color: var(--c-primary);
+}
+
+.error {
+  color: red;
+  font-weight: bold;
 }

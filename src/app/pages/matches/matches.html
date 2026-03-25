@@ -6,11 +6,24 @@
 
 <div class="matches">
   <div class="matches__header">
-    <button class="matches__header--button">Fase de grupos</button>
-    <button class="matches__header--button">Octavos</button>
-    <button class="matches__header--button">Cuartos</button>
-    <button class="matches__header--button">Semifinales</button>
-    <button class="matches__header--button">Final</button>
+    <button class="matches__header--button" (click)="searchMatches('grupos')">
+      Fase de grupos
+    </button>
+    <button class="matches__header--button" (click)="searchMatches('octavos')">
+      Octavos
+    </button>
+    <button class="matches__header--button" (click)="searchMatches('cuartos')">
+      Cuartos
+    </button>
+    <button
+      class="matches__header--button"
+      (click)="searchMatches('semifinal')"
+    >
+      Semifinales
+    </button>
+    <button class="matches__header--button" (click)="searchMatches('final')">
+      Final
+    </button>
   </div>
 
   <div class="matches__matches">
@@ -34,7 +47,9 @@
             {{ match.real_score_home }}-{{ match.real_score_away }}
           </p>
           } @else if (isLessThan24h(match.kickoff_time)) {
-          <p class="countdown">{{ countdowns().get(match.match_id) }}</p>
+          <p class="countdown">
+            {{ countdowns().get(match.match_id.toString()) }}
+          </p>
           } @else {
           <p>{{ formatKickoff(match.kickoff_time) }}</p>
           }
@@ -61,6 +76,7 @@
             min="0"
             max="99"
             class="matches__matches--prediction-input"
+            (input)="clearError(match.match_id)"
           />
           <span class="matches__matches--prediction-span"> - </span>
           <input
@@ -69,11 +85,28 @@
             min="0"
             max="99"
             class="matches__matches--prediction-input"
+            (input)="clearError(match.match_id)"
           />
         </div>
+        <select
+          name="winner"
+          [id]="match.match_id+'-select'"
+          class="matches__matches--prediction-input"
+          (change)="clearError(match.match_id)"
+        >
+          <option value="X">X</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+        @if(this.errorMesage().get(match.match_id)){
+        <small class="error"
+          >{{ this.errorMesage().get(match.match_id) }}</small
+        >
+        }
         <button
           class="matches__matches--prediction-button"
           [id]="match.match_id"
+          (click)="uploadPrediction(match)"
         >
           Enviar
         </button>
