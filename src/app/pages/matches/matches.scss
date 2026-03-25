@@ -3,6 +3,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
   &__gif {
     width: 12.5em;
 
@@ -15,13 +16,22 @@
     }
   }
 }
+
 .matches {
+  // 🔥 SOLUCIÓN HEADER QUE TAPA CONTENIDO
+  padding-bottom: 5em; // espacio para que no tape el último botón
+
   &__header {
     padding: 1em 2em;
     display: flex;
     justify-content: space-around;
     align-items: center;
     gap: 0.5em;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
 
     &--button {
       border: none;
@@ -36,6 +46,15 @@
       &:hover {
         translate: 0px -3px;
       }
+
+      @media (max-width: 768px) {
+        flex: 1 1 45%;
+        text-align: center;
+      }
+
+      @media (max-width: 480px) {
+        flex: 1 1 100%;
+      }
     }
   }
 
@@ -44,9 +63,17 @@
     margin: 1.5em;
     border-radius: 0.75em;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
     gap: 1.2em;
     padding: 1.5em;
+
+    @media (max-width: 768px) {
+      margin: 1em;
+      padding: 1em;
+      gap: 1em;
+    }
 
     &--match {
       display: flex;
@@ -55,6 +82,10 @@
       border-radius: 0.5em;
       padding: 1em;
       gap: 0.8em;
+
+      @media (max-width: 480px) {
+        padding: 0.8em;
+      }
     }
 
     &--teams {
@@ -73,10 +104,15 @@
     &--match-shortname {
       font-weight: bold;
       font-size: 0.9em;
+      text-align: center;
     }
 
     &--match-img {
       width: 3em;
+
+      @media (max-width: 480px) {
+        width: 2.2em;
+      }
     }
 
     &--result {
@@ -84,6 +120,11 @@
       font-weight: bold;
       font-size: 1.1em;
       min-width: 60px;
+
+      @media (max-width: 480px) {
+        font-size: 1em;
+        min-width: 50px;
+      }
     }
 
     &--prediction {
@@ -100,29 +141,55 @@
       &-title {
         padding: 1em;
       }
+
+      // 🔥 INPUTS MEJORADOS
       &-input {
         border: none;
-        padding: 0.2em 0.5em;
+        padding: 0.4em 0.8em;
         background-color: var(--c-secondary);
         color: var(--c-white);
         font-weight: bold;
         text-align: center;
         border-radius: 0.75em;
         margin: 0.5em;
+
+        @media (max-width: 480px) {
+          width: 3.2em;
+          margin: 0.3em;
+        }
       }
+
+      select {
+        min-width: 80px;
+        padding: 0.4em;
+        font-size: 1em;
+
+        @media (max-width: 480px) {
+          min-width: 100px;
+          font-size: 1.1em;
+        }
+      }
+
       &-span {
         font-weight: bold;
         font-size: 1.5em;
       }
+
       &-button {
         margin-top: 1em;
         background-color: var(--c-primary);
         border: none;
         border-radius: 0.75em;
-        padding: 0.3em 1.5em;
+        padding: 0.4em 1.5em;
         color: var(--c-black);
         font-weight: bold;
         text-transform: uppercase;
+        cursor: pointer;
+
+        @media (max-width: 480px) {
+          width: 100%;
+          padding: 0.6em;
+        }
       }
     }
   }
@@ -136,4 +203,7 @@
 .error {
   color: red;
   font-weight: bold;
+  font-size: 0.8em;
+  text-align: center;
+  margin-top: 0.3em;
 }
