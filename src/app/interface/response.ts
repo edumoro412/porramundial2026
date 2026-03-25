@@ -30,3 +30,10 @@ export interface MatchContent {
   played_at?: string;
   kickoff_time: string;
 }
+
+export interface Prediction {
+  match_id: number;
+  score_home: number;
+  score_away: number;
+  sign: string;
+}
