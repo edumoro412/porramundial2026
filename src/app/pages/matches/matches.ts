@@ -97,9 +97,15 @@ export class Matches implements OnInit {
       match.match_id + '-select',
     ) as HTMLSelectElement;
 
-    if (!homeInput?.value || !awayInput?.value || !selectInput?.value) {
+    if (!homeInput?.value || !awayInput?.value) {
       const errors = new Map(this.errorMesage());
       errors.set(match.match_id, 'Debes poner un resultado válido');
+      this.errorMesage.set(errors);
+      return;
+    }
+    if (!selectInput.value) {
+      const errors = new Map(this.errorMesage());
+      errors.set(match.match_id, 'Debes poner un signo válido');
       this.errorMesage.set(errors);
       return;
     }
