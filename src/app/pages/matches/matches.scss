@@ -22,6 +22,18 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
+&[id$="-select"] {
+  width: 5em;
+  padding: 0.4em;
+  margin-top: 0.5em;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  text-align: center;
+  text-align-last: center;
+  -webkit-text-align-last: center;
+}
+
 .matches {
   padding-bottom: 5em;
 
