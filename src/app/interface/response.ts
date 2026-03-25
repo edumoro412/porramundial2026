@@ -15,7 +15,7 @@ export interface LigaContent extends Liga {
 }
 
 export interface MatchContent {
-  match_id: string;
+  match_id: number;
   phase: string;
   home_team_id: string;
   home_team_name: string;
