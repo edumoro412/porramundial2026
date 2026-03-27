@@ -57,28 +57,6 @@
 
     @media (max-width: 768px) {
       flex-direction: column;
-      align-items: flex-start;
-      gap: 1em;
-
-      &--title {
-        font-size: 1.2em;
-      }
-
-      &--countdown {
-        width: 100%;
-        justify-content: space-between;
-
-        &-time {
-          flex: 1;
-          text-align: center;
-          padding: 0.5em 0.25em;
-          border-radius: 0.5em;
-        }
-      }
-    }
-
-    @media (max-width: 768px) {
-      flex-direction: column;
       align-items: center;
       gap: 1em;
 
@@ -115,6 +93,65 @@
 
     @media (max-width: 768px) {
       padding: 1em;
+    }
+
+    &--instructions {
+      margin-bottom: 2.5em;
+
+      &-title {
+        color: var(--c-primary);
+        border-bottom: 1px solid var(--c-primary);
+        margin-bottom: 1em;
+      }
+
+      &-phases {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1em;
+
+        @media (max-width: 1024px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      &-phase {
+        background-color: #141414;
+        border: 0.5px solid rgb(65, 65, 65);
+        border-top: 1px solid var(--c-primary);
+        border-radius: 0.75em;
+        padding: 1em;
+
+        h3 {
+          font-family: "Barlow Condensed", sans-serif;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: var(--c-primary);
+          margin-bottom: 0.6em;
+          font-size: 1rem;
+        }
+
+        p {
+          font-size: 0.85rem;
+          color: rgb(180, 180, 180);
+          margin-bottom: 0.3em;
+
+          strong {
+            color: var(--c-white);
+          }
+        }
+      }
+
+      &-note {
+        margin-top: 1em;
+        font-size: 0.8rem;
+        color: rgb(107, 105, 105);
+        font-style: italic;
+      }
     }
 
     &--leagues {
