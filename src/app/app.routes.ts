@@ -7,6 +7,7 @@ import { UserPage } from './components/user-page/user-page';
 import { LeaguesPage } from './pages/leagues-page/leagues-page';
 import { LeagueDetail } from './pages/league-detail/league-detail';
 import { Matches } from './pages/matches/matches';
+import { Admin } from './pages/admin/admin';
 
 export const routes: Routes = [
   {
@@ -32,6 +33,10 @@ export const routes: Routes = [
       {
         path: 'matches',
         component: Matches,
+      },
+      {
+        path: 'admin',
+        component: Admin,
       },
     ],
   },
