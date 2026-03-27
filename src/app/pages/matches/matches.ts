@@ -57,7 +57,6 @@ export class Matches implements OnInit {
 
       this.predictions.set(map);
 
-      console.log(this.matches());
       this.updateCountdowns();
       this.countdownSub = interval(1000).subscribe(() =>
         this.updateCountdowns(),
@@ -98,32 +97,26 @@ export class Matches implements OnInit {
     ) as HTMLSelectElement;
 
     if (!homeInput?.value || !awayInput?.value) {
-      const errors = new Map(this.errorMesage());
-      errors.set(match.match_id, 'Debes poner un resultado válido');
-      this.errorMesage.set(errors);
+      this.setError(match.match_id, 'Debes poner un resultado válido');
       return;
     }
     if (!selectInput.value) {
-      const errors = new Map(this.errorMesage());
-      errors.set(match.match_id, 'Debes poner un signo válido');
-      this.errorMesage.set(errors);
+      this.setError(match.match_id, 'Debes poner un signo válido');
       return;
     }
 
     const homeScore = parseInt(homeInput.value);
     const awayScore = parseInt(awayInput.value);
-    if (homeScore < 0 || homeScore > 30 || awayScore < 0 || awayScore > 30) {
-      const errors = new Map(this.errorMesage());
-      errors.set(match.match_id, 'Inserta un número de goles coherente');
-      this.errorMesage.set(errors);
 
-      return;
-    }
-
-    if (isNaN(homeScore) || isNaN(awayScore)) {
-      const errors = new Map(this.errorMesage());
-      errors.set(match.match_id, 'Los goles deben de ser números');
-      this.errorMesage.set(errors);
+    if (
+      isNaN(homeScore) ||
+      isNaN(awayScore) ||
+      homeScore < 0 ||
+      homeScore > 30 ||
+      awayScore < 0 ||
+      awayScore > 30
+    ) {
+      this.setError(match.match_id, 'Inserta un número de goles coherente');
       return;
     }
 
@@ -136,14 +129,28 @@ export class Matches implements OnInit {
     );
 
     if (!response.success) {
-      const errors = new Map(this.errorMesage());
-      errors.set(match.match_id, response.message);
-      this.errorMesage.set(errors);
-      console.log('Algo esta fallando');
+      this.setError(match.match_id, response.message);
     } else {
-      this.errorMesage.set(new Map()); // limpia error
+      const newPrediction: Prediction = {
+        match_id: match.match_id,
+        score_home: homeScore,
+        score_away: awayScore,
+        sign: selectInput.value,
+      };
+
+      const updatedPredictions = new Map(this.predictions());
+      updatedPredictions.set(match.match_id, newPrediction);
+      this.predictions.set(updatedPredictions);
+
+      this.errorMesage.set(new Map());
       alert('Predicción enviada correctamente');
     }
+  }
+
+  private setError(matchId: number, message: string) {
+    const errors = new Map(this.errorMesage());
+    errors.set(matchId, message);
+    this.errorMesage.set(errors);
   }
 
   ngOnDestroy() {
@@ -159,11 +166,31 @@ export class Matches implements OnInit {
     });
   }
 
+  matchPlayed(kickoff: string): boolean {
+    const matchDate = new Date(kickoff);
+    return new Date() > matchDate;
+  }
+
+  matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
+    const now = new Date();
+    const kickoff = new Date(match.kickoff_time);
+    const minutesElapsed = (now.getTime() - kickoff.getTime()) / 60000;
+
+    if (match.real_score_home !== null && match.real_score_away !== null) {
+      return 'finished';
+    }
+    if (minutesElapsed >= 0 && minutesElapsed <= 105) {
+      return 'live';
+    }
+    return 'upcoming';
+  }
+
   clearError(matchId: number) {
     const errors = new Map(this.errorMesage());
     errors.delete(matchId);
     this.errorMesage.set(errors);
   }
+
   isLessThan24h(kickoff: string): boolean {
     const diff = new Date(kickoff).getTime() - Date.now();
     return diff > 0 && diff < 24 * 60 * 60 * 1000;

@@ -42,17 +42,20 @@
         </div>
 
         <div class="matches__matches--result">
-          @if (match.real_score_home && match.real_score_away) {
+          @switch (matchStatus(match)) { @case ('finished') {
           <p class="result">
             {{ match.real_score_home }}-{{ match.real_score_away }}
           </p>
-          } @else if (isLessThan24h(match.kickoff_time)) {
+          <small class="status--finished">Finalizado</small>
+          } @case ('live') {
+          <small class="status--live">En juego</small>
+          } @case ('upcoming') { @if (isLessThan24h(match.kickoff_time)) {
           <p class="countdown">
             {{ countdowns().get(match.match_id.toString()) }}
           </p>
           } @else {
           <p>{{ formatKickoff(match.kickoff_time) }}</p>
-          }
+          } } }
         </div>
 
         <div class="matches__matches--match-home">
@@ -69,6 +72,23 @@
 
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
+
+        @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished')
+        { @if (!predictions().get(match.match_id) ||
+        predictions().get(match.match_id)?.score_home == null ||
+        predictions().get(match.match_id)?.score_away == null) {
+        <small class="no-prediction"
+          >No hiciste predicción para este partido</small
+        >
+        } @else {
+        <p class="your-prediction">
+          {{ predictions().get(match.match_id)?.score_home }} - {{
+          predictions().get(match.match_id)?.score_away }} @if
+          (predictions().get(match.match_id)?.sign) { ({{
+          predictions().get(match.match_id)?.sign }}) }
+        </p>
+        } } @else {
+        <!-- Predicción editable -->
         <div>
           <input
             [id]="match.match_id+'-home'"
@@ -78,6 +98,7 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="this.predictions().get(match.match_id)?.score_home"
+            [disabled]="matchPlayed(match.kickoff_time)"
           />
           <span class="matches__matches--prediction-span"> - </span>
           <input
@@ -88,24 +109,28 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="this.predictions().get(match.match_id)?.score_away"
+            [disabled]="matchPlayed(match.kickoff_time)"
           />
         </div>
+
         <select
           name="winner"
           [id]="match.match_id+'-select'"
           class="matches__matches--prediction-input"
           (change)="clearError(match.match_id)"
           [value]="this.predictions().get(match.match_id)?.sign"
+          [disabled]="matchPlayed(match.kickoff_time)"
         >
           <option value="X">X</option>
           <option value="1">1</option>
           <option value="2">2</option>
         </select>
+
         @if(this.errorMesage().get(match.match_id)){
         <small class="error"
           >{{ this.errorMesage().get(match.match_id) }}</small
         >
-        }
+        } @if(!matchPlayed(match.kickoff_time)){
         <button
           class="matches__matches--prediction-button"
           [id]="match.match_id"
@@ -113,6 +138,7 @@
         >
           Enviar
         </button>
+        } }
       </div>
     </div>
     }

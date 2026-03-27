@@ -23,6 +23,13 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
+.status--finished {
+  color: var(--c-white);
+  font-weight: bold;
+}
+.status--live {
+  color: var(--c-primary);
+}
 .matches {
   padding-bottom: 5em;
 
