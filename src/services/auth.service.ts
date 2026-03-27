@@ -7,6 +7,7 @@ import {
   MatchContent,
   Prediction,
   RegisterResponse,
+  TeamInterface,
 } from '../app/interface/response';
 import { UserSimple, UserSimples } from '../app/interface/user';
 
@@ -556,5 +557,86 @@ export class AuthService {
       sign: data?.predicted_sign,
     };
     return response;
+  }
+
+  async getTeams(): Promise<TeamInterface[] | null> {
+    const { data, error } = await this.supabase.from('teams').select('*');
+
+    if (error) {
+      return null;
+    }
+
+    return data;
+  }
+
+  async addMatch(
+    home_team_id: number,
+    away_team_id: number,
+    kickoff: string,
+    phase: string,
+  ): Promise<RegisterResponse> {
+    const { data, error } = await this.supabase.from('matches').insert({
+      phase: phase,
+      home_team_id: home_team_id,
+      away_team_id: away_team_id,
+      kickoff_time: kickoff,
+    });
+
+    if (error) {
+      return { success: false, message: 'Ocurrio un error' };
+    }
+    return { success: true, message: 'Partido añadido con éxito' };
+  }
+
+  async getMatchesPlaying(): Promise<MatchContent[] | null> {
+    const { data, error } = await this.supabase
+      .from('matches')
+      .select('*')
+      .is('real_score_home', null)
+      .is('real_score_away', null)
+      .lte('kickoff_time', new Date().toISOString());
+
+    if (error) {
+      return null;
+    }
+
+    return data;
+  }
+
+  async getTeamName(id: number): Promise<string | null> {
+    const { data, error } = await this.supabase
+      .from('teams')
+      .select('name')
+      .eq('team_id', id)
+      .maybeSingle();
+
+    if (error) {
+      return null;
+    }
+
+    return data?.name;
+  }
+
+  async saveResult(
+    match_id: number,
+    home_score: number,
+    away_score: number,
+    sign: string,
+  ) {
+    const { data, error } = await this.supabase
+      .from('matches')
+      .update({
+        real_score_home: home_score,
+        real_score_away: away_score,
+        real_sign: sign,
+      })
+      .eq('match_id', match_id);
+
+    if (error) {
+      console.error('Error al guardar el resultado:', error);
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, data };
   }
 }
