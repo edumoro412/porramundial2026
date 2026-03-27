@@ -84,7 +84,7 @@ export class Admin implements OnInit {
     }
   }
 
-  getName(id: string): string {
+  getName(id: number): string {
     return this.teamNames.get(Number(id)) ?? 'Desconocido';
   }
 
