@@ -1,0 +1,97 @@
+@if(loading()){
+<div class="loading">
+  <img
+    src="/loading.gif"
+    alt="Icono de carga"
+    title="Icono de carga"
+    aria-label="Loading icon"
+    class="loading__gif"
+  />
+</div>
+}@else {
+<div class="admin">
+  <section class="admin__section">
+    <h2 class="admin__title">Añadir partido</h2>
+    <div class="admin__form">
+      <select name="home_team" #home_team class="admin__select">
+        @for(team of this.teams; track team.team_id){
+        <option class="admin__select--option" [value]="team.team_id">
+          {{team.name}}
+        </option>
+        }
+      </select>
+      <select name="away_team" #away_team class="admin__select">
+        @for(team of this.teams; track team.team_id){
+        <option class="admin__select--option" [value]="team.team_id">
+          {{team.name}}
+        </option>
+        }
+      </select>
+      <select name="phase" #phase class="admin__select">
+        <option value="grupos">Grupos</option>
+        <option value="octavos">Octavos</option>
+        <option value="cuartos">Cuartos</option>
+        <option value="semifinal">Semifinal</option>
+        <option value="final">Final</option>
+      </select>
+      <input
+        class="admin__input"
+        type="datetime-local"
+        name="date-time"
+        #kickoff
+      />
+      <button
+        class="admin__btn"
+        (click)="anadirPartido(home_team.value, away_team.value, phase.value, kickoff.value)"
+      >
+        Añadir partido
+      </button>
+    </div>
+  </section>
+
+  <section class="admin__section">
+    <h2 class="admin__title">Añadir resultado a un partido</h2>
+    @for(match of this.matches; track match.match_id){
+    <div class="admin__match">
+      <span class="admin__match--teams">
+        {{getName(match.home_team_id)}} - {{getName(match.away_team_id)}}
+      </span>
+      <div class="admin__match--controls">
+        <input
+          class="admin__input admin__input--score"
+          type="number"
+          [id]="match.match_id+'-home'"
+          #homeScore
+          min="0"
+          placeholder="Local"
+        />
+        <span class="admin__match--separator">:</span>
+        <input
+          class="admin__input admin__input--score"
+          type="number"
+          [id]="match.match_id+'-away'"
+          #awayScore
+          min="0"
+          placeholder="Visit."
+        />
+        <select
+          class="admin__select admin__select--sign"
+          [id]="match.match_id+'-sign'"
+          #sign
+        >
+          <option value="1">1</option>
+          <option value="X">X</option>
+          <option value="2">2</option>
+        </select>
+        <button
+          class="admin__btn admin__btn--save"
+          (click)="guardarResultado(match.match_id, homeScore.value, awayScore.value, sign.value)"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+    }
+  </section>
+</div>
+}
