@@ -74,9 +74,9 @@
         <p class="matches__matches--prediction-title">Tu predicción</p>
 
         @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished')
-        { @if (!predictions().get(match.match_id) ||
+        { @if ( !predictions().get(match.match_id) ||
         predictions().get(match.match_id)?.score_home == null ||
-        predictions().get(match.match_id)?.score_away == null) {
+        predictions().get(match.match_id)?.score_away == null ) {
         <small class="no-prediction"
           >No hiciste predicción para este partido</small
         >
@@ -87,7 +87,14 @@
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        } } @else {
+        @if (match.phase !== 'grupos' &&
+        predictions().get(match.match_id)?.winner_team_id) {
+        <small class="your-prediction__winner">
+          Pasa: {{ predictions().get(match.match_id)?.winner_team_id ===
+          match.home_team_id ? match.home_team_short_name :
+          match.away_team_short_name }}
+        </small>
+        } } } @else {
         <!-- Predicción editable -->
         <div>
           <input
@@ -114,7 +121,7 @@
         </div>
 
         <select
-          name="winner"
+          name="sign"
           [id]="match.match_id+'-select'"
           class="matches__matches--prediction-input"
           (change)="clearError(match.match_id)"
@@ -126,7 +133,28 @@
           <option value="2">2</option>
         </select>
 
-        @if(this.errorMesage().get(match.match_id)){
+        @if (match.phase !== 'grupos') {
+        <select
+          [id]="match.match_id+'-winner'"
+          class="matches__matches--prediction-input"
+          (change)="clearError(match.match_id)"
+          [disabled]="matchPlayed(match.kickoff_time)"
+        >
+          <option value="">¿Quién pasa?</option>
+          <option
+            [value]="match.home_team_id"
+            [selected]="isWinner(match, match.home_team_id)"
+          >
+            {{match.home_team_short_name}}
+          </option>
+          <option
+            [value]="match.away_team_id"
+            [selected]="isWinner(match, match.away_team_id)"
+          >
+            {{match.away_team_short_name}}
+          </option>
+        </select>
+        } @if(this.errorMesage().get(match.match_id)){
         <small class="error"
           >{{ this.errorMesage().get(match.match_id) }}</small
         >

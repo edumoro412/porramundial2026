@@ -95,6 +95,9 @@ export class Matches implements OnInit {
     const selectInput = document.getElementById(
       match.match_id + '-select',
     ) as HTMLSelectElement;
+    const winnerInput = document.getElementById(
+      match.match_id + '-winner',
+    ) as HTMLSelectElement;
 
     if (!homeInput?.value || !awayInput?.value) {
       this.setError(match.match_id, 'Debes poner un resultado válido');
@@ -102,6 +105,10 @@ export class Matches implements OnInit {
     }
     if (!selectInput.value) {
       this.setError(match.match_id, 'Debes poner un signo válido');
+      return;
+    }
+    if (match.phase !== 'grupos' && !winnerInput?.value) {
+      this.setError(match.match_id, 'Debes indicar quién crees que pasa');
       return;
     }
 
@@ -120,28 +127,32 @@ export class Matches implements OnInit {
       return;
     }
 
+    const winnerId =
+      match.phase !== 'grupos' && winnerInput?.value
+        ? Number(winnerInput.value)
+        : null;
+
     const response = await this.auth.sendMatchPrediction(
       match.match_id,
       homeScore,
       awayScore,
       user.id,
       selectInput.value,
+      winnerId,
     );
 
     if (!response.success) {
       this.setError(match.match_id, response.message);
     } else {
-      const newPrediction: Prediction = {
+      const updatedPredictions = new Map(this.predictions());
+      updatedPredictions.set(match.match_id, {
         match_id: match.match_id,
         score_home: homeScore,
         score_away: awayScore,
         sign: selectInput.value,
-      };
-
-      const updatedPredictions = new Map(this.predictions());
-      updatedPredictions.set(match.match_id, newPrediction);
+        winner_team_id: winnerId,
+      });
       this.predictions.set(updatedPredictions);
-
       this.errorMesage.set(new Map());
       alert('Predicción enviada correctamente');
     }
@@ -207,5 +218,11 @@ export class Matches implements OnInit {
       map.set(match.match_id.toString(), `${h}:${m}:${s}`);
     });
     this.countdowns.set(map);
+  }
+
+  isWinner(match: MatchContent, teamId: number): boolean {
+    const winner = this.predictions().get(match.match_id)?.winner_team_id;
+    if (!winner) return false;
+    return winner === teamId;
   }
 }
