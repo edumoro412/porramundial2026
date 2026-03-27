@@ -25,11 +25,11 @@ export interface TeamInterface {
 export interface MatchContent {
   match_id: number;
   phase: string;
-  home_team_id: string;
+  home_team_id: number;
   home_team_name: string;
   home_team_img: string;
   home_team_short_name: string;
-  away_team_id: string;
+  away_team_id: number;
   away_team_name: string;
   away_team_img: string;
   away_team_short_name: string;
@@ -44,4 +44,5 @@ export interface Prediction {
   score_home: number;
   score_away: number;
   sign: string;
+  winner_team_id?: number | null;
 }
