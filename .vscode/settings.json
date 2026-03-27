@@ -18,6 +18,7 @@
     "card-league",
     "league-detail",
     "delete-league",
-    "matches"
+    "matches",
+    "admin"
   ]
 }
