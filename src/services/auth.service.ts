@@ -463,6 +463,7 @@ export class AuthService {
     score_away: number,
     user_id: string,
     sign: string,
+    winner_team_id?: number | null,
   ): Promise<RegisterResponse> {
     const { data: existing, error: selectError } = await this.supabase
       .from('match_predictions')
@@ -472,70 +473,47 @@ export class AuthService {
       .maybeSingle();
 
     if (selectError) {
-      console.log('Error al buscar predicción:', selectError);
       return {
         success: false,
         message: 'Ocurrió un error inesperado al buscar la predicción',
       };
     }
 
+    const payload: any = {
+      predicted_score_home: score_home,
+      predicted_score_away: score_away,
+      predicted_sign: sign,
+    };
+
+    if (winner_team_id !== undefined) {
+      payload.predicted_winner_team_id = winner_team_id;
+    }
+
     if (existing) {
-      console.log('Encontro la data, vamos a actualizarla');
-
-      const { data, error } = await this.supabase
+      const { error } = await this.supabase
         .from('match_predictions')
-        .update({
-          predicted_score_home: score_home,
-          predicted_score_away: score_away,
-          predicted_sign: sign,
-        })
+        .update(payload)
         .eq('user_id', user_id)
-        .eq('match_id', match_id)
-        .select()
-        .maybeSingle();
+        .eq('match_id', match_id);
 
-      console.log('UPDATE RESULT:', { data, error });
-
-      if (error) {
-        console.log('Hubo un error al actualizar la data:', error);
+      if (error)
         return {
           success: false,
           message: 'Hubo un error al actualizar tu predicción',
         };
-      }
-
-      return {
-        success: true,
-        message: 'Predicción actualizada',
-      };
+      return { success: true, message: 'Predicción actualizada' };
     }
 
-    console.log('No existe, vamos a insertarla');
-
-    const { data, error } = await this.supabase
+    const { error } = await this.supabase
       .from('match_predictions')
-      .insert({
-        user_id,
-        match_id,
-        predicted_score_home: score_home,
-        predicted_score_away: score_away,
-        predicted_sign: sign,
-      });
+      .insert({ user_id, match_id, ...payload });
 
-    console.log('INSERT RESULT:', { data, error });
-
-    if (error) {
-      console.log('Hubo un error al insertar la data:', error);
+    if (error)
       return {
         success: false,
         message: 'Hubo un error al insertar la predicción',
       };
-    }
-
-    return {
-      success: true,
-      message: 'Predicción guardada',
-    };
+    return { success: true, message: 'Predicción guardada' };
   }
 
   async getMatchPrediction(
@@ -544,19 +522,22 @@ export class AuthService {
   ): Promise<Prediction | null> {
     const { data, error } = await this.supabase
       .from('match_predictions')
-      .select('predicted_score_home, predicted_score_away, predicted_sign')
+      .select(
+        'predicted_score_home, predicted_score_away, predicted_sign, predicted_winner_team_id',
+      )
       .eq('match_id', match_id)
       .eq('user_id', user_id)
       .maybeSingle();
 
     if (error) return null;
-    const response: Prediction = {
-      match_id: match_id,
+
+    return {
+      match_id,
       score_home: data?.predicted_score_home,
       score_away: data?.predicted_score_away,
       sign: data?.predicted_sign,
+      winner_team_id: data?.predicted_winner_team_id ?? null,
     };
-    return response;
   }
 
   async getTeams(): Promise<TeamInterface[] | null> {
