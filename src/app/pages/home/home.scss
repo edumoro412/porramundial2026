@@ -181,6 +181,19 @@
       }
     }
   }
+
+  &__footer {
+    height: 10dvh;
+    background-color: #141414;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+
+    @media (max-width: 700px) {
+      display: none;
+    }
+  }
 }
 
 .p {
