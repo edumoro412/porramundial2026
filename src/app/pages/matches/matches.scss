@@ -189,6 +189,18 @@ input[type="number"]::-webkit-inner-spin-button {
           -webkit-text-align-last: center;
         }
 
+        &[id$="-winner"] {
+          width: 10em;
+          padding: 0.4em;
+          margin-top: 0.5em;
+          -webkit-appearance: none;
+          appearance: none;
+          cursor: pointer;
+          text-align: center;
+          text-align-last: center;
+          -webkit-text-align-last: center;
+        }
+
         @media (max-width: 480px) {
           width: 3.2em;
           margin: 0.3em;
@@ -196,6 +208,14 @@ input[type="number"]::-webkit-inner-spin-button {
           &[id$="-select"] {
             width: 5em;
             font-size: 1em;
+            text-align: center;
+            text-align-last: center;
+            -webkit-text-align-last: center;
+          }
+
+          &[id$="-winner"] {
+            width: 100%;
+            font-size: 0.9em;
             text-align: center;
             text-align-last: center;
             -webkit-text-align-last: center;
@@ -228,7 +248,7 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 
   &__group {
-    grid-column: 1 / -1; // ocupa todo el ancho del grid padre
+    grid-column: 1 / -1;
 
     &--title {
       font-size: 1rem;
