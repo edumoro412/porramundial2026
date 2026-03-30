@@ -385,7 +385,7 @@ export class AuthService {
       played_at,
       kickoff_time,
       home_team:teams!matches_home_team_id_fkey (
-        team_id, name, short_name, flag_url
+        team_id, name, short_name, flag_url, group_letter
       ),
       away_team:teams!matches_away_team_id_fkey (
         team_id, name, short_name, flag_url
@@ -413,6 +413,7 @@ export class AuthService {
         away_team_name: m.away_team.name,
         away_team_short_name: m.away_team.short_name,
         away_team_img: m.away_team.flag_url,
+        group_letter: m.home_team.group_letter ?? null,
       }));
     } else {
       const { data, error } = await this.supabase
