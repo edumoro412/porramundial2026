@@ -3,10 +3,12 @@ import { MatchContent, Prediction } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
+import { NgClass } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 
 @Component({
   selector: 'app-matches',
-  imports: [],
+  imports: [KeyValuePipe],
   templateUrl: './matches.html',
   styleUrl: './matches.scss',
 })
@@ -17,6 +19,7 @@ export class Matches implements OnInit {
   phase = signal<string>('');
   matches = signal<MatchContent[]>([]);
   loading = signal<boolean>(false);
+  isTransitioning = signal<boolean>(false);
   errorMesage = signal<Map<number, string>>(new Map());
   predictions = signal<Map<number, Prediction>>(new Map());
 
@@ -37,26 +40,21 @@ export class Matches implements OnInit {
         this.phase(),
       );
 
-      if (!response || response.length === 0) {
-        return;
-      }
+      if (!response || response.length === 0) return;
+
       this.matches.set(response);
+      console.log(this.matches()[0]);
 
       const map = new Map<number, Prediction>();
-
       for (const match of response) {
         const predict = await this.auth.getMatchPrediction(
           match.match_id,
           user.id,
         );
-
-        if (predict) {
-          map.set(match.match_id, predict);
-        }
+        if (predict) map.set(match.match_id, predict);
       }
 
       this.predictions.set(map);
-
       this.updateCountdowns();
       this.countdownSub = interval(1000).subscribe(() =>
         this.updateCountdowns(),
@@ -68,15 +66,39 @@ export class Matches implements OnInit {
     }
   }
 
-  async searchMatches(phase: string) {
-    this.matches.set([]);
+  changePhase(phase: string) {
+    this.phase.set(phase);
+  }
 
+  get matchesByGroup(): Map<string, MatchContent[]> {
+    const map = new Map<string, MatchContent[]>();
+
+    for (const match of this.matches()) {
+      const key = match.group_letter
+        ? `Grupo ${match.group_letter}`
+        : 'Sin grupo';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(match);
+    }
+
+    return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+  }
+
+  async searchMatches(phase: string) {
+    // Blur out
+    this.isTransitioning.set(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    this.matches.set([]);
     const response: MatchContent[] | null = await this.auth.getMatches(phase);
 
-    if (!response || response.length === 0) {
-      return;
+    if (response && response.length > 0) {
+      this.matches.set(response);
     }
-    this.matches.set(response);
+
+    // Blur in
+    setTimeout(() => this.isTransitioning.set(false), 50);
   }
 
   async uploadPrediction(match: MatchContent) {
@@ -178,8 +200,7 @@ export class Matches implements OnInit {
   }
 
   matchPlayed(kickoff: string): boolean {
-    const matchDate = new Date(kickoff);
-    return new Date() > matchDate;
+    return new Date() > new Date(kickoff);
   }
 
   matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
@@ -187,12 +208,9 @@ export class Matches implements OnInit {
     const kickoff = new Date(match.kickoff_time);
     const minutesElapsed = (now.getTime() - kickoff.getTime()) / 60000;
 
-    if (match.real_score_home !== null && match.real_score_away !== null) {
+    if (match.real_score_home !== null && match.real_score_away !== null)
       return 'finished';
-    }
-    if (minutesElapsed >= 0 && minutesElapsed <= 105) {
-      return 'live';
-    }
+    if (minutesElapsed >= 0 && minutesElapsed <= 105) return 'live';
     return 'upcoming';
   }
 

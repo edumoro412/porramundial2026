@@ -30,6 +30,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .status--live {
   color: var(--c-primary);
 }
+
 .matches {
   padding-bottom: 5em;
 
@@ -67,6 +68,11 @@ input[type="number"]::-webkit-inner-spin-button {
       @media (max-width: 480px) {
         flex: 1 1 100%;
       }
+
+      &-selected {
+        background-color: var(--c-white);
+        color: var(--c-primary);
+      }
     }
   }
 
@@ -78,6 +84,14 @@ input[type="number"]::-webkit-inner-spin-button {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.2em;
     padding: 1.5em;
+    transition:
+      filter 0.3s ease-in-out,
+      opacity 0.3s ease-in-out;
+
+    &.is-loading {
+      filter: brightness(0);
+      opacity: 0;
+    }
 
     @media (max-width: 768px) {
       margin: 1em;
@@ -209,6 +223,30 @@ input[type="number"]::-webkit-inner-spin-button {
           width: 100%;
           padding: 0.6em;
         }
+      }
+    }
+  }
+
+  &__group {
+    grid-column: 1 / -1; // ocupa todo el ancho del grid padre
+
+    &--title {
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+    }
+
+    &--grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2em;
+
+      @media (max-width: 768px) {
+        gap: 1em;
       }
     }
   }

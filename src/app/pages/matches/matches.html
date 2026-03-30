@@ -6,28 +6,186 @@
 
 <div class="matches">
   <div class="matches__header">
-    <button class="matches__header--button" (click)="searchMatches('grupos')">
+    <button
+      class="matches__header--button"
+      [class.matches__header--button-selected]="phase() === 'grupos'"
+      (click)="searchMatches('grupos'); changePhase('grupos')"
+    >
       Fase de grupos
     </button>
-    <button class="matches__header--button" (click)="searchMatches('octavos')">
+    <button
+      class="matches__header--button"
+      [class.matches__header--button-selected]="phase() === 'octavos'"
+      (click)="searchMatches('octavos'); changePhase('octavos')"
+    >
       Octavos
     </button>
-    <button class="matches__header--button" (click)="searchMatches('cuartos')">
+    <button
+      class="matches__header--button"
+      [class.matches__header--button-selected]="phase() === 'cuartos'"
+      (click)="searchMatches('cuartos'); changePhase('cuartos')"
+    >
       Cuartos
     </button>
     <button
       class="matches__header--button"
-      (click)="searchMatches('semifinal')"
+      [class.matches__header--button-selected]="phase() === 'semifinal'"
+      (click)="searchMatches('semifinal'); changePhase('semifinal')"
     >
       Semifinales
     </button>
-    <button class="matches__header--button" (click)="searchMatches('final')">
+    <button
+      class="matches__header--button"
+      [class.matches__header--button-selected]="phase() === 'final'"
+      (click)="searchMatches('final'); changePhase('final')"
+    >
       Final
     </button>
   </div>
 
-  <div class="matches__matches">
-    @for(match of this.matches(); track match.match_id){
+  <div class="matches__matches" [class.is-loading]="isTransitioning()">
+    @if (phase() === 'grupos') { @for (entry of matchesByGroup | keyvalue: null;
+    track entry.key) {
+    <div class="matches__group">
+      <h3 class="matches__group--title">{{ entry.key }}</h3>
+      <div class="matches__group--grid">
+        @for (match of entry.value; track match.match_id) {
+        <div class="matches__matches--match">
+          <div class="matches__matches--teams">
+            <div class="matches__matches--match-home">
+              <img
+                [src]="match.home_team_img"
+                alt="Home team"
+                class="matches__matches--match-img"
+              />
+              <p class="matches__matches--match-shortname">
+                {{match.home_team_short_name}}
+              </p>
+            </div>
+            <div class="matches__matches--result">
+              @switch (matchStatus(match)) { @case ('finished') {
+              <p class="result">
+                {{ match.real_score_home }}-{{ match.real_score_away }}
+              </p>
+              <small class="status--finished">Finalizado</small>
+              } @case ('live') {
+              <small class="status--live">En juego</small>
+              } @case ('upcoming') { @if (isLessThan24h(match.kickoff_time)) {
+              <p class="countdown">
+                {{ countdowns().get(match.match_id.toString()) }}
+              </p>
+              } @else {
+              <p>{{ formatKickoff(match.kickoff_time) }}</p>
+              } } }
+            </div>
+            <div class="matches__matches--match-home">
+              <img
+                [src]="match.away_team_img"
+                alt="Away team"
+                class="matches__matches--match-img"
+              />
+              <p class="matches__matches--match-shortname">
+                {{match.away_team_short_name}}
+              </p>
+            </div>
+          </div>
+          <div class="matches__matches--prediction">
+            <p class="matches__matches--prediction-title">Tu predicción</p>
+            @if (matchStatus(match) === 'live' || matchStatus(match) ===
+            'finished') { @if (!predictions().get(match.match_id) ||
+            predictions().get(match.match_id)?.score_home == null ||
+            predictions().get(match.match_id)?.score_away == null) {
+            <small class="no-prediction"
+              >No hiciste predicción para este partido</small
+            >
+            } @else {
+            <p class="your-prediction">
+              {{ predictions().get(match.match_id)?.score_home }} - {{
+              predictions().get(match.match_id)?.score_away }} @if
+              (predictions().get(match.match_id)?.sign) { ({{
+              predictions().get(match.match_id)?.sign }}) }
+            </p>
+            @if (match.phase !== 'grupos' &&
+            predictions().get(match.match_id)?.winner_team_id) {
+            <small class="your-prediction__winner">
+              Pasa: {{ predictions().get(match.match_id)?.winner_team_id ===
+              match.home_team_id ? match.home_team_short_name :
+              match.away_team_short_name }}
+            </small>
+            } } } @else {
+            <div>
+              <input
+                [id]="match.match_id+'-home'"
+                type="number"
+                min="0"
+                max="99"
+                class="matches__matches--prediction-input"
+                (input)="clearError(match.match_id)"
+                [value]="predictions().get(match.match_id)?.score_home"
+                [disabled]="matchPlayed(match.kickoff_time)"
+              />
+              <span class="matches__matches--prediction-span"> - </span>
+              <input
+                [id]="match.match_id+'-away'"
+                type="number"
+                min="0"
+                max="99"
+                class="matches__matches--prediction-input"
+                (input)="clearError(match.match_id)"
+                [value]="predictions().get(match.match_id)?.score_away"
+                [disabled]="matchPlayed(match.kickoff_time)"
+              />
+            </div>
+            <select
+              name="sign"
+              [id]="match.match_id+'-select'"
+              class="matches__matches--prediction-input"
+              (change)="clearError(match.match_id)"
+              [value]="predictions().get(match.match_id)?.sign"
+              [disabled]="matchPlayed(match.kickoff_time)"
+            >
+              <option value="X">X</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+            </select>
+            @if (match.phase !== 'grupos') {
+            <select
+              [id]="match.match_id+'-winner'"
+              class="matches__matches--prediction-input"
+              (change)="clearError(match.match_id)"
+              [disabled]="matchPlayed(match.kickoff_time)"
+            >
+              <option value="">¿Quién pasa?</option>
+              <option
+                [value]="match.home_team_id"
+                [selected]="isWinner(match, match.home_team_id)"
+              >
+                {{match.home_team_short_name}}
+              </option>
+              <option
+                [value]="match.away_team_id"
+                [selected]="isWinner(match, match.away_team_id)"
+              >
+                {{match.away_team_short_name}}
+              </option>
+            </select>
+            } @if(errorMesage().get(match.match_id)){
+            <small class="error">{{ errorMesage().get(match.match_id) }}</small>
+            } @if(!matchPlayed(match.kickoff_time)){
+            <button
+              class="matches__matches--prediction-button"
+              [id]="match.match_id"
+              (click)="uploadPrediction(match)"
+            >
+              Enviar
+            </button>
+            } }
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+    } } @else { @for(match of this.matches(); track match.match_id){
     <div class="matches__matches--match">
       <div class="matches__matches--teams">
         <div class="matches__matches--match-home">
@@ -40,7 +198,6 @@
             {{match.home_team_short_name}}
           </p>
         </div>
-
         <div class="matches__matches--result">
           @switch (matchStatus(match)) { @case ('finished') {
           <p class="result">
@@ -57,7 +214,6 @@
           <p>{{ formatKickoff(match.kickoff_time) }}</p>
           } } }
         </div>
-
         <div class="matches__matches--match-home">
           <img
             [src]="match.away_team_img"
@@ -69,14 +225,12 @@
           </p>
         </div>
       </div>
-
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
-
         @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished')
-        { @if ( !predictions().get(match.match_id) ||
+        { @if (!predictions().get(match.match_id) ||
         predictions().get(match.match_id)?.score_home == null ||
-        predictions().get(match.match_id)?.score_away == null ) {
+        predictions().get(match.match_id)?.score_away == null) {
         <small class="no-prediction"
           >No hiciste predicción para este partido</small
         >
@@ -95,7 +249,6 @@
           match.away_team_short_name }}
         </small>
         } } } @else {
-        <!-- Predicción editable -->
         <div>
           <input
             [id]="match.match_id+'-home'"
@@ -104,7 +257,7 @@
             max="99"
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
-            [value]="this.predictions().get(match.match_id)?.score_home"
+            [value]="predictions().get(match.match_id)?.score_home"
             [disabled]="matchPlayed(match.kickoff_time)"
           />
           <span class="matches__matches--prediction-span"> - </span>
@@ -115,24 +268,22 @@
             max="99"
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
-            [value]="this.predictions().get(match.match_id)?.score_away"
+            [value]="predictions().get(match.match_id)?.score_away"
             [disabled]="matchPlayed(match.kickoff_time)"
           />
         </div>
-
         <select
           name="sign"
           [id]="match.match_id+'-select'"
           class="matches__matches--prediction-input"
           (change)="clearError(match.match_id)"
-          [value]="this.predictions().get(match.match_id)?.sign"
+          [value]="predictions().get(match.match_id)?.sign"
           [disabled]="matchPlayed(match.kickoff_time)"
         >
           <option value="X">X</option>
           <option value="1">1</option>
           <option value="2">2</option>
         </select>
-
         @if (match.phase !== 'grupos') {
         <select
           [id]="match.match_id+'-winner'"
@@ -154,10 +305,8 @@
             {{match.away_team_short_name}}
           </option>
         </select>
-        } @if(this.errorMesage().get(match.match_id)){
-        <small class="error"
-          >{{ this.errorMesage().get(match.match_id) }}</small
-        >
+        } @if(errorMesage().get(match.match_id)){
+        <small class="error">{{ errorMesage().get(match.match_id) }}</small>
         } @if(!matchPlayed(match.kickoff_time)){
         <button
           class="matches__matches--prediction-button"
@@ -169,7 +318,7 @@
         } }
       </div>
     </div>
-    }
+    } }
   </div>
 </div>
 }
