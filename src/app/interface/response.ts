@@ -37,6 +37,7 @@ export interface MatchContent {
   real_score_away: number | null;
   played_at?: string;
   kickoff_time: string;
+  group_letter?: string;
 }
 
 export interface Prediction {
