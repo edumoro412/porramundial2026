@@ -2,7 +2,7 @@
 <div class="loading">
   <img src="loading.gif" class="loading__gif" alt="" />
 </div>
-} @if(!this.loading()){
+} @else {
 
 <div class="matches">
   <div class="matches__header">
@@ -12,6 +12,13 @@
       (click)="searchMatches('grupos'); changePhase('grupos')"
     >
       Fase de grupos
+    </button>
+    <button
+      class="matches__header--button"
+      [class.matches__header--button-selected]="phase() === 'dieciseisavos'"
+      (click)="searchMatches('dieciseisavos'); changePhase('dieciseisavos')"
+    >
+      Dieciseisavos
     </button>
     <button
       class="matches__header--button"
@@ -44,8 +51,8 @@
   </div>
 
   <div class="matches__matches" [class.is-loading]="isTransitioning()">
-    @if (phase() === 'grupos') { @for (entry of matchesByGroup | keyvalue: null;
-    track entry.key) {
+    @if (phase() === 'grupos') { @if (matchesByGroup && matchesByGroup.size > 0)
+    { @for (entry of matchesByGroup | keyvalue: null; track entry.key) {
     <div class="matches__group">
       <h3 class="matches__group--title">{{ entry.key }}</h3>
       <div class="matches__group--grid">
@@ -185,7 +192,10 @@
         }
       </div>
     </div>
-    } } @else { @for(match of this.matches(); track match.match_id){
+    } } @else {
+    <p class="no-matches">No hay partidos en la fase de grupos.</p>
+    } } @else { @if (this.matches() && this.matches().length > 0) { @for(match
+    of this.matches(); track match.match_id){
     <div class="matches__matches--match">
       <div class="matches__matches--teams">
         <div class="matches__matches--match-home">
@@ -318,6 +328,8 @@
         } }
       </div>
     </div>
+    } } @else {
+    <p class="no-matches">No hay partidos en esta fase.</p>
     } }
   </div>
 </div>
