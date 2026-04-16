@@ -29,6 +29,7 @@
       </select>
       <select name="phase" #phase class="admin__select">
         <option value="grupos">Grupos</option>
+        <option value="dieciseisavos">Dieciseisavos</option>
         <option value="octavos">Octavos</option>
         <option value="cuartos">Cuartos</option>
         <option value="semifinal">Semifinal</option>
@@ -83,9 +84,17 @@
           <option value="X">X</option>
           <option value="2">2</option>
         </select>
+        <select class="admin__select" #winnerid>
+          <option [value]="match.home_team_id">
+            {{getName(match.home_team_id)}}
+          </option>
+          <option [value]="match.away_team_id">
+            {{getName(match.away_team_id)}}
+          </option>
+        </select>
         <button
           class="admin__btn admin__btn--save"
-          (click)="guardarResultado(match.match_id, homeScore.value, awayScore.value, sign.value)"
+          (click)="guardarResultado(match.match_id, homeScore.value, awayScore.value, sign.value, winnerid.value)"
         >
           Guardar
         </button>

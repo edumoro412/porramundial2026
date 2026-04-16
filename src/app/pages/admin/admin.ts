@@ -93,12 +93,14 @@ export class Admin implements OnInit {
     home_score: string,
     away_score: string,
     sign: string,
+    winnerId: string,
   ) {
     const respuesta = await this.auth.saveResult(
       Number(match_id),
       Number(home_score),
       Number(away_score),
       sign,
+      Number(winnerId),
     );
 
     if (respuesta.success) {
