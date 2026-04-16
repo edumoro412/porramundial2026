@@ -11,13 +11,12 @@
       align-items: center;
       padding: 1em;
       width: 70%;
-      gap: 1em;
       &-title {
         color: var(--c-black);
         font-weight: 800;
       }
       &-image {
-        width: 3.5em;
+        width: 5em;
         transition: all 0.3s ease-in-out;
 
         &:hover {
