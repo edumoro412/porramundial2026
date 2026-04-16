@@ -174,6 +174,9 @@ export class AuthService {
   }
 
   async crearLiga(liga: Liga): Promise<RegisterResponse> {
+    if (liga.name.trim() == '') {
+      return { success: false, message: 'Debes poner un nombre a la liga' };
+    }
     const { data: nombre } = await this.supabase
       .from('leagues')
       .select('name')
@@ -565,7 +568,7 @@ export class AuthService {
     });
 
     if (error) {
-      return { success: false, message: 'Ocurrio un error' };
+      return { success: false, message: 'Ocurrio un error' + error };
     }
     return { success: true, message: 'Partido añadido con éxito' };
   }
