@@ -35,6 +35,7 @@ export interface MatchContent {
   away_team_short_name: string;
   real_score_home: number | null;
   real_score_away: number | null;
+  real_winner_team_id?: number | null;
   played_at?: string;
   kickoff_time: string;
   group_letter?: string;
