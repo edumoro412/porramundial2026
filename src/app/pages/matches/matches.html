@@ -51,8 +51,8 @@
   </div>
 
   <div class="matches__matches" [class.is-loading]="isTransitioning()">
-    @if (phase() === 'grupos') { @if (matchesByGroup && matchesByGroup.size > 0)
-    { @for (entry of matchesByGroup | keyvalue: null; track entry.key) {
+    @if (phase() === 'grupos') { @for (entry of matchesByGroup | keyvalue: null;
+    track entry.key) {
     <div class="matches__group">
       <h3 class="matches__group--title">{{ entry.key }}</h3>
       <div class="matches__group--grid">
@@ -96,6 +96,7 @@
               </p>
             </div>
           </div>
+
           <div class="matches__matches--prediction">
             <p class="matches__matches--prediction-title">Tu predicción</p>
             @if (matchStatus(match) === 'live' || matchStatus(match) ===
@@ -112,14 +113,7 @@
               (predictions().get(match.match_id)?.sign) { ({{
               predictions().get(match.match_id)?.sign }}) }
             </p>
-            @if (match.phase !== 'grupos' &&
-            predictions().get(match.match_id)?.winner_team_id) {
-            <small class="your-prediction__winner">
-              Pasa: {{ predictions().get(match.match_id)?.winner_team_id ===
-              match.home_team_id ? match.home_team_short_name :
-              match.away_team_short_name }}
-            </small>
-            } } } @else {
+            } } @else {
             <div>
               <input
                 [id]="match.match_id+'-home'"
@@ -143,18 +137,25 @@
                 [disabled]="matchPlayed(match.kickoff_time)"
               />
             </div>
-            <select
-              name="sign"
-              [id]="match.match_id+'-select'"
-              class="matches__matches--prediction-input"
-              (change)="clearError(match.match_id)"
-              [value]="predictions().get(match.match_id)?.sign"
-              [disabled]="matchPlayed(match.kickoff_time)"
-            >
-              <option value="X">X</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-            </select>
+            <div class="matches__matches--prediction-sign">
+              <label
+                [for]="match.match_id+'-select'"
+                class="matches__matches--prediction-label"
+                >Signo:</label
+              >
+              <select
+                name="sign"
+                [id]="match.match_id+'-select'"
+                class="matches__matches--prediction-input"
+                (change)="clearError(match.match_id)"
+                [value]="predictions().get(match.match_id)?.sign"
+                [disabled]="matchPlayed(match.kickoff_time)"
+              >
+                <option value="X">X</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+            </div>
             @if (match.phase !== 'grupos') {
             <select
               [id]="match.match_id+'-winner'"
@@ -192,10 +193,7 @@
         }
       </div>
     </div>
-    } } @else {
-    <p class="no-matches">No hay partidos en la fase de grupos.</p>
-    } } @else { @if (this.matches() && this.matches().length > 0) { @for(match
-    of this.matches(); track match.match_id){
+    } } @else { @for(match of this.matches(); track match.match_id){
     <div class="matches__matches--match">
       <div class="matches__matches--teams">
         <div class="matches__matches--match-home">
@@ -235,6 +233,20 @@
           </p>
         </div>
       </div>
+
+      <!-- PASA solo knockout y solo cuando está finalizado -->
+      @if (matchStatus(match) === 'finished' && match.real_winner_team_id) {
+      <div class="matches__passes">
+        <small class="passes-text">
+          Pasa:
+          <strong
+            >{{ match.real_winner_team_id === match.home_team_id ?
+            match.home_team_short_name : match.away_team_short_name }}</strong
+          >
+        </small>
+      </div>
+      }
+
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
         @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished')
@@ -251,14 +263,7 @@
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        @if (match.phase !== 'grupos' &&
-        predictions().get(match.match_id)?.winner_team_id) {
-        <small class="your-prediction__winner">
-          Pasa: {{ predictions().get(match.match_id)?.winner_team_id ===
-          match.home_team_id ? match.home_team_short_name :
-          match.away_team_short_name }}
-        </small>
-        } } } @else {
+        } } @else {
         <div>
           <input
             [id]="match.match_id+'-home'"
@@ -282,18 +287,25 @@
             [disabled]="matchPlayed(match.kickoff_time)"
           />
         </div>
-        <select
-          name="sign"
-          [id]="match.match_id+'-select'"
-          class="matches__matches--prediction-input"
-          (change)="clearError(match.match_id)"
-          [value]="predictions().get(match.match_id)?.sign"
-          [disabled]="matchPlayed(match.kickoff_time)"
-        >
-          <option value="X">X</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-        </select>
+        <div class="matches__matches--prediction-sign">
+          <label
+            [for]="match.match_id+'-select'"
+            class="matches__matches--prediction-label"
+            >Signo:</label
+          >
+          <select
+            name="sign"
+            [id]="match.match_id+'-select'"
+            class="matches__matches--prediction-input"
+            (change)="clearError(match.match_id)"
+            [value]="predictions().get(match.match_id)?.sign"
+            [disabled]="matchPlayed(match.kickoff_time)"
+          >
+            <option value="X">X</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+          </select>
+        </div>
         @if (match.phase !== 'grupos') {
         <select
           [id]="match.match_id+'-winner'"
@@ -328,8 +340,6 @@
         } }
       </div>
     </div>
-    } } @else {
-    <p class="no-matches">No hay partidos en esta fase.</p>
     } }
   </div>
 </div>
