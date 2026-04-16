@@ -179,14 +179,6 @@
             </select>
             } @if(errorMesage().get(match.match_id)){
             <small class="error">{{ errorMesage().get(match.match_id) }}</small>
-            } @if(!matchPlayed(match.kickoff_time)){
-            <button
-              class="matches__matches--prediction-button"
-              [id]="match.match_id"
-              (click)="uploadPrediction(match)"
-            >
-              Enviar
-            </button>
             } }
           </div>
         </div>
@@ -234,7 +226,6 @@
         </div>
       </div>
 
-      <!-- PASA solo knockout y solo cuando está finalizado -->
       @if (matchStatus(match) === 'finished' && match.real_winner_team_id) {
       <div class="matches__passes">
         <small class="passes-text">
@@ -329,18 +320,20 @@
         </select>
         } @if(errorMesage().get(match.match_id)){
         <small class="error">{{ errorMesage().get(match.match_id) }}</small>
-        } @if(!matchPlayed(match.kickoff_time)){
-        <button
-          class="matches__matches--prediction-button"
-          [id]="match.match_id"
-          (click)="uploadPrediction(match)"
-        >
-          Enviar
-        </button>
         } }
       </div>
     </div>
     } }
+  </div>
+
+  <div class="matches__save-all">
+    <button
+      class="matches__save-all--button"
+      (click)="uploadAllPredictions()"
+      [disabled]="isSavingAll()"
+    >
+      {{ isSavingAll() ? 'Guardando...' : 'Guardar todos' }}
+    </button>
   </div>
 </div>
 }

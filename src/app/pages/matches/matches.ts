@@ -22,6 +22,7 @@ export class Matches implements OnInit {
   isTransitioning = signal<boolean>(false);
   errorMesage = signal<Map<number, string>>(new Map());
   predictions = signal<Map<number, Prediction>>(new Map());
+  isSavingAll = signal<boolean>(false);
 
   constructor(
     private auth: AuthService,
@@ -85,7 +86,6 @@ export class Matches implements OnInit {
   }
 
   async searchMatches(phase: string) {
-    // Blur out
     this.isTransitioning.set(true);
 
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -97,11 +97,47 @@ export class Matches implements OnInit {
       this.matches.set(response);
     }
 
-    // Blur in
     setTimeout(() => this.isTransitioning.set(false), 50);
   }
 
-  async uploadPrediction(match: MatchContent) {
+  async uploadAllPredictions() {
+    this.isSavingAll.set(true);
+
+    const allMatches =
+      this.phase() === 'grupos'
+        ? [...(Object.values(this.matchesByGroup) as MatchContent[][])].flat()
+        : this.matches();
+
+    const pendingMatches = allMatches.filter(
+      (match) => !this.matchPlayed(match.kickoff_time),
+    );
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const match of pendingMatches) {
+      const result = await this.uploadPrediction(match, true);
+      if (result === true) successCount++;
+      else if (result === false) errorCount++;
+    }
+
+    this.isSavingAll.set(false);
+
+    if (errorCount === 0 && successCount > 0) {
+      alert(`✅ ${successCount} predicción(es) guardadas correctamente`);
+    } else if (successCount === 0 && errorCount === 0) {
+      alert('No hay predicciones nuevas que guardar');
+    } else {
+      alert(
+        `✅ ${successCount} guardadas correctamente\n❌ ${errorCount} con errores`,
+      );
+    }
+  }
+
+  async uploadPrediction(
+    match: MatchContent,
+    silent = false,
+  ): Promise<boolean | void> {
     const user = await this.auth.getCurrentSimpleUser();
     if (!user?.id) {
       this.router.navigateByUrl('/login');
@@ -122,16 +158,18 @@ export class Matches implements OnInit {
     ) as HTMLSelectElement;
 
     if (!homeInput?.value || !awayInput?.value) {
-      this.setError(match.match_id, 'Debes poner un resultado válido');
-      return;
+      if (!silent)
+        this.setError(match.match_id, 'Debes poner un resultado válido');
+      return false;
     }
-    if (!selectInput.value) {
-      this.setError(match.match_id, 'Debes poner un signo válido');
-      return;
+    if (!selectInput?.value) {
+      if (!silent) this.setError(match.match_id, 'Debes poner un signo válido');
+      return false;
     }
     if (match.phase !== 'grupos' && !winnerInput?.value) {
-      this.setError(match.match_id, 'Debes indicar quién crees que pasa');
-      return;
+      if (!silent)
+        this.setError(match.match_id, 'Debes indicar quién crees que pasa');
+      return false;
     }
 
     const homeScore = parseInt(homeInput.value);
@@ -145,8 +183,9 @@ export class Matches implements OnInit {
       awayScore < 0 ||
       awayScore > 30
     ) {
-      this.setError(match.match_id, 'Inserta un número de goles coherente');
-      return;
+      if (!silent)
+        this.setError(match.match_id, 'Inserta un número de goles coherente');
+      return false;
     }
 
     const winnerId =
@@ -164,7 +203,8 @@ export class Matches implements OnInit {
     );
 
     if (!response.success) {
-      this.setError(match.match_id, response.message);
+      if (!silent) this.setError(match.match_id, response.message);
+      return false;
     } else {
       const updatedPredictions = new Map(this.predictions());
       updatedPredictions.set(match.match_id, {
@@ -176,7 +216,8 @@ export class Matches implements OnInit {
       });
       this.predictions.set(updatedPredictions);
       this.errorMesage.set(new Map());
-      alert('Predicción enviada correctamente');
+      if (!silent) alert('Predicción enviada correctamente');
+      return true;
     }
   }
 
