@@ -13,6 +13,8 @@
     >
       Fase de grupos
     </button>
+    @if(this.dieciseiavosButton()){
+
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'dieciseisavos'"
@@ -20,6 +22,8 @@
     >
       Dieciseisavos
     </button>
+    } @if(this.octavosButton()){
+
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'octavos'"
@@ -27,6 +31,8 @@
     >
       Octavos
     </button>
+    } @if(this.cuartosButton()){
+
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'cuartos'"
@@ -34,6 +40,8 @@
     >
       Cuartos
     </button>
+    } @if(this.semisButton()){
+
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'semifinal'"
@@ -41,6 +49,8 @@
     >
       Semifinales
     </button>
+    } @if(this.finalButton()){
+
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'final'"
@@ -48,6 +58,7 @@
     >
       Final
     </button>
+    }
   </div>
 
   <div class="matches__matches" [class.is-loading]="isTransitioning()">
@@ -325,8 +336,7 @@
     </div>
     } }
   </div>
-
-  <div class="matches__save-all">
+  <div class="matches__save-all" [class.is-loading]="isTransitioning()">
     <button
       class="matches__save-all--button"
       (click)="uploadAllPredictions()"

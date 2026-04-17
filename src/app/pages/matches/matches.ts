@@ -3,12 +3,12 @@ import { MatchContent, Prediction } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
-import { NgClass } from '@angular/common';
+import { NgClass, NgStyle } from '@angular/common';
 import { KeyValuePipe } from '@angular/common';
 
 @Component({
   selector: 'app-matches',
-  imports: [KeyValuePipe],
+  imports: [KeyValuePipe, NgStyle],
   templateUrl: './matches.html',
   styleUrl: './matches.scss',
 })
@@ -23,6 +23,11 @@ export class Matches implements OnInit {
   errorMesage = signal<Map<number, string>>(new Map());
   predictions = signal<Map<number, Prediction>>(new Map());
   isSavingAll = signal<boolean>(false);
+  dieciseiavosButton = signal<boolean>(true);
+  octavosButton = signal<boolean>(true);
+  semisButton = signal<boolean>(true);
+  cuartosButton = signal<boolean>(true);
+  finalButton = signal<boolean>(true);
 
   constructor(
     private auth: AuthService,
@@ -42,6 +47,28 @@ export class Matches implements OnInit {
       );
 
       if (!response || response.length === 0) return;
+
+      const dieciseisavosMatches = await this.auth.getMatches('dieciseisavos');
+      const octavosMatches = await this.auth.getMatches('octavos');
+      const cuartosMatches = await this.auth.getMatches('cuartos');
+      const semisMatches = await this.auth.getMatches('semifinal');
+      const finalMatches = await this.auth.getMatches('final');
+
+      if (dieciseisavosMatches?.length == 0 || !dieciseisavosMatches) {
+        this.dieciseiavosButton.set(false);
+      }
+      if (octavosMatches?.length == 0 || !octavosMatches) {
+        this.octavosButton.set(false);
+      }
+      if (cuartosMatches?.length == 0 || !cuartosMatches) {
+        this.cuartosButton.set(false);
+      }
+      if (semisMatches?.length == 0 || !semisMatches) {
+        this.semisButton.set(false);
+      }
+      if (finalMatches?.length == 0 || !finalMatches) {
+        this.finalButton.set(false);
+      }
 
       this.matches.set(response);
       console.log(this.matches()[0]);
