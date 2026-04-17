@@ -8,7 +8,7 @@ import { KeyValuePipe } from '@angular/common';
 
 @Component({
   selector: 'app-matches',
-  imports: [KeyValuePipe, NgStyle],
+  imports: [KeyValuePipe],
   templateUrl: './matches.html',
   styleUrl: './matches.scss',
 })
