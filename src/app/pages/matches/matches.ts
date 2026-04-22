@@ -259,7 +259,7 @@ export class Matches implements OnInit {
   }
 
   formatKickoff(kickoff: string): string {
-    return new Date(kickoff).toLocaleString('es-ES', {
+    return new Date(kickoff).toLocaleString(undefined, {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
