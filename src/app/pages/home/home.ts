@@ -32,7 +32,7 @@ export class Home implements OnInit, OnDestroy {
 
   constructor(
     private auth: AuthService,
-    private router: Router,
+    public router: Router,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -76,5 +76,10 @@ export class Home implements OnInit, OnDestroy {
     this.seconds.set(
       String(Math.floor((diff % 60000) / 1000)).padStart(2, '0'),
     );
+  }
+
+  redirectInstrucciones() {
+    console.log('Hubo vclick');
+    this.router.navigateByUrl('/instructions');
   }
 }
