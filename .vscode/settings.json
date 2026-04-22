@@ -19,6 +19,7 @@
     "league-detail",
     "delete-league",
     "matches",
-    "admin"
+    "admin",
+    "instructions"
   ]
 }
