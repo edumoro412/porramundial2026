@@ -1,0 +1,126 @@
+$bg-color: #080808;
+$card-bg: #121212;
+$neon-green: #00ff85;
+$text-gray: #b3b3b3;
+$white: #ffffff;
+$warning-orange: #ffcc00;
+
+.instructions {
+  background-color: $bg-color;
+  color: $white;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+
+  &__title {
+    color: $neon-green;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-left: 4px solid $neon-green;
+    padding-left: 15px;
+
+    @media (max-width: 600px) {
+      font-size: 1.4rem;
+    }
+  }
+
+  &__grid {
+    display: grid;
+
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.2rem;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    background: $card-bg;
+
+    border: 1px solid rgba($neon-green, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: $neon-green;
+      background: rgba($neon-green, 0.02);
+      transform: translateY(-3px);
+    }
+
+    &--deadline {
+      border-color: rgba($warning-orange, 0.4);
+      .instructions__subtitle {
+        color: $warning-orange;
+      }
+
+      &:hover {
+        border-color: $warning-orange;
+      }
+    }
+
+    &--highlight {
+      border: 1px solid rgba($neon-green, 0.5);
+    }
+  }
+
+  &__subtitle {
+    color: $neon-green;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: $text-gray;
+
+    li {
+      margin-bottom: 0.8rem;
+      line-height: 1.5;
+      position: relative;
+      padding-left: 1.4rem;
+      font-size: 0.95rem;
+
+      &::before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: $neon-green;
+        font-weight: bold;
+      }
+    }
+
+    strong {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+
+  &__alert {
+    color: $warning-orange;
+    font-size: 0.85rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    font-weight: 500;
+  }
+
+  &__footer {
+    margin-top: 2.5rem;
+    padding: 1.2rem;
+    border-top: 1px solid rgba($white, 0.1);
+    color: #777;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.4;
+  }
+}
