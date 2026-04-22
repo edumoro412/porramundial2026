@@ -8,6 +8,7 @@ import { LeaguesPage } from './pages/leagues-page/leagues-page';
 import { LeagueDetail } from './pages/league-detail/league-detail';
 import { Matches } from './pages/matches/matches';
 import { Admin } from './pages/admin/admin';
+import { Instructions } from './pages/instructions/instructions';
 
 export const routes: Routes = [
   {
@@ -37,6 +38,10 @@ export const routes: Routes = [
       {
         path: 'admin',
         component: Admin,
+      },
+      {
+        path: 'instructions',
+        component: Instructions,
       },
     ],
   },
