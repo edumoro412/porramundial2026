@@ -14,9 +14,10 @@ import { KeyValuePipe } from '@angular/common';
 })
 export class Matches implements OnInit {
   countdowns = signal<Map<string, string>>(new Map());
+  phaseDeadlineCountdown = signal<string>('');
   private countdownSub!: Subscription;
 
-  phase = signal<string>('');
+  phase = signal<string>('grupos');
   matches = signal<MatchContent[]>([]);
   loading = signal<boolean>(false);
   isTransitioning = signal<boolean>(false);
@@ -84,9 +85,11 @@ export class Matches implements OnInit {
 
       this.predictions.set(map);
       this.updateCountdowns();
-      this.countdownSub = interval(1000).subscribe(() =>
-        this.updateCountdowns(),
-      );
+      this.updatePhaseDeadlineCountdown();
+      this.countdownSub = interval(1000).subscribe(() => {
+        this.updateCountdowns();
+        this.updatePhaseDeadlineCountdown();
+      });
     } catch (err) {
       console.log('Error', err);
     } finally {
@@ -96,6 +99,7 @@ export class Matches implements OnInit {
 
   changePhase(phase: string) {
     this.phase.set(phase);
+    this.updatePhaseDeadlineCountdown();
   }
 
   get matchesByGroup(): Map<string, MatchContent[]> {
@@ -122,6 +126,7 @@ export class Matches implements OnInit {
 
     if (response && response.length > 0) {
       this.matches.set(response);
+      this.updatePhaseDeadlineCountdown();
     }
 
     setTimeout(() => this.isTransitioning.set(false), 50);
@@ -132,12 +137,23 @@ export class Matches implements OnInit {
 
     const allMatches =
       this.phase() === 'grupos'
-        ? [...(Object.values(this.matchesByGroup) as MatchContent[][])].flat()
+        ? Array.from(this.matchesByGroup.values()).flat()
         : this.matches();
 
     const pendingMatches = allMatches.filter(
-      (match) => !this.matchPlayed(match.kickoff_time),
+      (match) =>
+        !this.matchPlayed(match.kickoff_time) && !this.isPhaseBlocked(),
     );
+
+    if (pendingMatches.length === 0) {
+      this.isSavingAll.set(false);
+      if (this.isPhaseBlocked()) {
+        alert('🔒 Las predicciones de esta fase están cerradas');
+      } else {
+        alert('No hay predicciones nuevas que guardar');
+      }
+      return;
+    }
 
     let successCount = 0;
     let errorCount = 0;
@@ -271,6 +287,25 @@ export class Matches implements OnInit {
     return new Date() > new Date(kickoff);
   }
 
+  isPhaseBlocked(): boolean {
+    const matches = this.matches();
+    if (!matches || matches.length === 0) return false;
+
+    const futureKickoffs = matches
+      .map((m) => new Date(m.kickoff_time).getTime())
+      .filter((t) => t > Date.now())
+      .sort((a, b) => a - b);
+
+    if (futureKickoffs.length === 0) return false;
+
+    const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
+    return hoursUntilFirst < 3;
+  }
+
+  isInputDisabled(kickoff: string): boolean {
+    return this.matchPlayed(kickoff) || this.isPhaseBlocked();
+  }
+
   matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
     const now = new Date();
     const kickoff = new Date(match.kickoff_time);
@@ -304,6 +339,41 @@ export class Matches implements OnInit {
       map.set(match.match_id.toString(), `${h}:${m}:${s}`);
     });
     this.countdowns.set(map);
+  }
+
+  private updatePhaseDeadlineCountdown(): void {
+    const matches = this.matches();
+    if (!matches || matches.length === 0) {
+      this.phaseDeadlineCountdown.set('');
+      return;
+    }
+
+    const futureKickoffs = matches
+      .map((m) => new Date(m.kickoff_time).getTime())
+      .filter((t) => t > Date.now())
+      .sort((a, b) => a - b);
+
+    if (futureKickoffs.length === 0) {
+      this.phaseDeadlineCountdown.set('');
+      return;
+    }
+
+    const deadline = futureKickoffs[0] - 3 * 60 * 60 * 1000;
+    const diff = deadline - Date.now();
+
+    if (diff <= 0) {
+      this.phaseDeadlineCountdown.set('cerrado');
+      return;
+    }
+
+    const d = Math.floor(diff / 86400000);
+    const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+
+    this.phaseDeadlineCountdown.set(
+      d > 0 ? `${d}d ${h}:${m}:${s}` : `${h}:${m}:${s}`,
+    );
   }
 
   isWinner(match: MatchContent, teamId: number): boolean {

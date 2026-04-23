@@ -61,6 +61,19 @@
     }
   </div>
 
+  @if (phaseDeadlineCountdown()) {
+  <div class="matches__deadline">
+    @if (phaseDeadlineCountdown() === 'cerrado') {
+    <p class="matches__deadline--closed">🔒 Predicciones cerradas</p>
+    } @else {
+    <p class="matches__deadline--open">
+      ⏳ Cierre de predicciones de {{this.phase()}} en:
+      <strong>{{ phaseDeadlineCountdown() }}</strong>
+    </p>
+    }
+  </div>
+  }
+
   <div class="matches__matches" [class.is-loading]="isTransitioning()">
     @if (phase() === 'grupos') { @for (entry of matchesByGroup | keyvalue: null;
     track entry.key) {
@@ -111,7 +124,8 @@
           <div class="matches__matches--prediction">
             <p class="matches__matches--prediction-title">Tu predicción</p>
             @if (matchStatus(match) === 'live' || matchStatus(match) ===
-            'finished') { @if (!predictions().get(match.match_id) ||
+            'finished' || isPhaseBlocked()) { @if
+            (!predictions().get(match.match_id) ||
             predictions().get(match.match_id)?.score_home == null ||
             predictions().get(match.match_id)?.score_away == null) {
             <small class="no-prediction"
@@ -134,7 +148,7 @@
                 class="matches__matches--prediction-input"
                 (input)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.score_home"
-                [disabled]="matchPlayed(match.kickoff_time)"
+                [disabled]="isInputDisabled(match.kickoff_time)"
               />
               <span class="matches__matches--prediction-span"> - </span>
               <input
@@ -145,7 +159,7 @@
                 class="matches__matches--prediction-input"
                 (input)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.score_away"
-                [disabled]="matchPlayed(match.kickoff_time)"
+                [disabled]="isInputDisabled(match.kickoff_time)"
               />
             </div>
             <div class="matches__matches--prediction-sign">
@@ -160,7 +174,7 @@
                 class="matches__matches--prediction-input"
                 (change)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.sign"
-                [disabled]="matchPlayed(match.kickoff_time)"
+                [disabled]="isInputDisabled(match.kickoff_time)"
               >
                 <option value="X">X</option>
                 <option value="1">1</option>
@@ -172,7 +186,7 @@
               [id]="match.match_id+'-winner'"
               class="matches__matches--prediction-input"
               (change)="clearError(match.match_id)"
-              [disabled]="matchPlayed(match.kickoff_time)"
+              [disabled]="isInputDisabled(match.kickoff_time)"
             >
               <option value="">¿Quién pasa?</option>
               <option
@@ -251,8 +265,8 @@
 
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
-        @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished')
-        { @if (!predictions().get(match.match_id) ||
+        @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished'
+        || isPhaseBlocked()) { @if (!predictions().get(match.match_id) ||
         predictions().get(match.match_id)?.score_home == null ||
         predictions().get(match.match_id)?.score_away == null) {
         <small class="no-prediction"
@@ -275,7 +289,7 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.score_home"
-            [disabled]="matchPlayed(match.kickoff_time)"
+            [disabled]="isInputDisabled(match.kickoff_time)"
           />
           <span class="matches__matches--prediction-span"> - </span>
           <input
@@ -286,7 +300,7 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.score_away"
-            [disabled]="matchPlayed(match.kickoff_time)"
+            [disabled]="isInputDisabled(match.kickoff_time)"
           />
         </div>
         <div class="matches__matches--prediction-sign">
@@ -301,7 +315,7 @@
             class="matches__matches--prediction-input"
             (change)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.sign"
-            [disabled]="matchPlayed(match.kickoff_time)"
+            [disabled]="isInputDisabled(match.kickoff_time)"
           >
             <option value="X">X</option>
             <option value="1">1</option>
@@ -313,7 +327,7 @@
           [id]="match.match_id+'-winner'"
           class="matches__matches--prediction-input"
           (change)="clearError(match.match_id)"
-          [disabled]="matchPlayed(match.kickoff_time)"
+          [disabled]="isInputDisabled(match.kickoff_time)"
         >
           <option value="">¿Quién pasa?</option>
           <option
