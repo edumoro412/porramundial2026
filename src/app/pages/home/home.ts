@@ -85,7 +85,7 @@ export class Home implements OnInit, OnDestroy {
 
   goToUnirse() {
     this.router.navigate(['/leagues'], {
-      fragment: 'mi-seccion-especifica',
+      fragment: 'unirseLiga',
     });
   }
   goToCrear() {
