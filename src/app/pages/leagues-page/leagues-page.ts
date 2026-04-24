@@ -3,7 +3,7 @@ import { OnInit } from '@angular/core';
 import { Liga, LigaContent } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { UserSimple } from '../../interface/user';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
@@ -27,6 +27,7 @@ export class LeaguesPage implements OnInit {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -44,6 +45,10 @@ export class LeaguesPage implements OnInit {
       console.error(err);
     } finally {
       this.loading.set(false);
+      const fragment = this.route.snapshot.fragment;
+      if (fragment) {
+        this.scrollToFragment(fragment);
+      }
     }
   }
 
@@ -121,5 +126,17 @@ export class LeaguesPage implements OnInit {
     }
     const result = await this.auth.getLigas(this.user?.id);
     this.leagues.set(result ?? []);
+  }
+
+  private scrollToFragment(fragment: string, attempts = 0): void {
+    const target = document.getElementById(fragment);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    if (attempts < 10) {
+      setTimeout(() => this.scrollToFragment(fragment, attempts + 1), 100);
+    }
   }
 }
