@@ -17,6 +17,32 @@
 }
 
 .home {
+  &__leagues {
+    padding: 2em 2em 0 2em;
+    &--title {
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--c-primary);
+      color: var(--c-primary);
+    }
+    &--buttons {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 2em 2em 1em 2em;
+      &-button {
+        background-color: var(--c-primary);
+        border: none;
+        padding: 1em 2em;
+        border-radius: 2em;
+        text-transform: uppercase;
+        font-weight: bold;
+        transition: 0.3s all ease-in-out;
+        &:hover {
+          transform: scale(1.05);
+        }
+      }
+    }
+  }
   &__button {
     display: block;
     margin: 2em;

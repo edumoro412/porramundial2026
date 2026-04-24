@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { UserSimple } from '../../interface/user';
 import { interval, Subscription } from 'rxjs';
 import { LigaContent } from '../../interface/response';
@@ -9,7 +9,7 @@ import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, CardLeague],
+  imports: [CommonModule, CardLeague, RouterLink],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
@@ -81,5 +81,14 @@ export class Home implements OnInit, OnDestroy {
   redirectInstrucciones() {
     console.log('Hubo vclick');
     this.router.navigateByUrl('/instructions');
+  }
+
+  goToUnirse() {
+    this.router.navigate(['/leagues'], {
+      fragment: 'mi-seccion-especifica',
+    });
+  }
+  goToCrear() {
+    this.router.navigate(['/leagues'], { fragment: 'crearLiga' });
   }
 }

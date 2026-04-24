@@ -23,7 +23,17 @@
   <button class="home__button" (click)="redirectInstrucciones()">
     INSTRUCCIONES
   </button>
-
+  <div class="home__leagues">
+    <h2 class="home__leagues--title">Crea o unete a una liga</h2>
+    <section class="home__leagues--buttons">
+      <button class="home__leagues--buttons-button" (click)="goToUnirse()">
+        Unirse a liga
+      </button>
+      <button class="home__leagues--buttons-button" (click)="goToCrear()">
+        Crear liga
+      </button>
+    </section>
+  </div>
   <div class="home__content">
     <section class="home__content--instructions">
       <h2 class="home__content--instructions-title">¿COMO SE PUNTUA?</h2>
