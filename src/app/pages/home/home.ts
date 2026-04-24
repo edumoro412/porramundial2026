@@ -9,7 +9,7 @@ import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, CardLeague, RouterLink],
+  imports: [CommonModule, CardLeague],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
