@@ -3,7 +3,6 @@ import { MatchContent, Prediction } from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
-import { NgClass, NgStyle } from '@angular/common';
 import { KeyValuePipe } from '@angular/common';
 
 @Component({
@@ -43,6 +42,7 @@ export class Matches implements OnInit {
         this.router.navigateByUrl('/login');
         return;
       }
+
       const response: MatchContent[] | null = await this.auth.getMatches(
         this.phase(),
       );
@@ -55,24 +55,18 @@ export class Matches implements OnInit {
       const semisMatches = await this.auth.getMatches('semifinal');
       const finalMatches = await this.auth.getMatches('final');
 
-      if (dieciseisavosMatches?.length == 0 || !dieciseisavosMatches) {
+      if (!dieciseisavosMatches || dieciseisavosMatches.length === 0)
         this.dieciseiavosButton.set(false);
-      }
-      if (octavosMatches?.length == 0 || !octavosMatches) {
+      if (!octavosMatches || octavosMatches.length === 0)
         this.octavosButton.set(false);
-      }
-      if (cuartosMatches?.length == 0 || !cuartosMatches) {
+      if (!cuartosMatches || cuartosMatches.length === 0)
         this.cuartosButton.set(false);
-      }
-      if (semisMatches?.length == 0 || !semisMatches) {
+      if (!semisMatches || semisMatches.length === 0)
         this.semisButton.set(false);
-      }
-      if (finalMatches?.length == 0 || !finalMatches) {
+      if (!finalMatches || finalMatches.length === 0)
         this.finalButton.set(false);
-      }
 
       this.matches.set(response);
-      console.log(this.matches()[0]);
 
       const map = new Map<number, Prediction>();
       for (const match of response) {
@@ -91,15 +85,15 @@ export class Matches implements OnInit {
         this.updatePhaseDeadlineCountdown();
       });
     } catch (err) {
-      console.log('Error', err);
+      console.error('Error en ngOnInit:', err);
     } finally {
       this.loading.set(false);
     }
   }
 
-  changePhase(phase: string) {
+  async changePhase(phase: string): Promise<void> {
     this.phase.set(phase);
-    this.updatePhaseDeadlineCountdown();
+    await this.searchMatches(phase);
   }
 
   get matchesByGroup(): Map<string, MatchContent[]> {
@@ -116,23 +110,43 @@ export class Matches implements OnInit {
     return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])));
   }
 
-  async searchMatches(phase: string) {
+  async searchMatches(phase: string): Promise<void> {
     this.isTransitioning.set(true);
 
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     this.matches.set([]);
+    this.predictions.set(new Map());
+
+    const user = await this.auth.getCurrentSimpleUser();
+    if (!user?.id) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
     const response: MatchContent[] | null = await this.auth.getMatches(phase);
 
     if (response && response.length > 0) {
       this.matches.set(response);
+
+      // Recarga predicciones para la nueva fase
+      const map = new Map<number, Prediction>();
+      for (const match of response) {
+        const predict = await this.auth.getMatchPrediction(
+          match.match_id,
+          user.id,
+        );
+        if (predict) map.set(match.match_id, predict);
+      }
+      this.predictions.set(map);
       this.updatePhaseDeadlineCountdown();
+      this.updateCountdowns();
     }
 
     setTimeout(() => this.isTransitioning.set(false), 50);
   }
 
-  async uploadAllPredictions() {
+  async uploadAllPredictions(): Promise<void> {
     this.isSavingAll.set(true);
 
     const allMatches =
@@ -264,13 +278,13 @@ export class Matches implements OnInit {
     }
   }
 
-  private setError(matchId: number, message: string) {
+  private setError(matchId: number, message: string): void {
     const errors = new Map(this.errorMesage());
     errors.set(matchId, message);
     this.errorMesage.set(errors);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.countdownSub?.unsubscribe();
   }
 
@@ -287,6 +301,7 @@ export class Matches implements OnInit {
     return new Date() > new Date(kickoff);
   }
 
+  // FIX 2: si no hay kickoffs futuros, la fase está bloqueada
   isPhaseBlocked(): boolean {
     const matches = this.matches();
     if (!matches || matches.length === 0) return false;
@@ -296,7 +311,7 @@ export class Matches implements OnInit {
       .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
 
-    if (futureKickoffs.length === 0) return false;
+    if (futureKickoffs.length === 0) return true;
 
     const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
     return hoursUntilFirst < 3;
@@ -317,7 +332,7 @@ export class Matches implements OnInit {
     return 'upcoming';
   }
 
-  clearError(matchId: number) {
+  clearError(matchId: number): void {
     const errors = new Map(this.errorMesage());
     errors.delete(matchId);
     this.errorMesage.set(errors);
@@ -341,6 +356,7 @@ export class Matches implements OnInit {
     this.countdowns.set(map);
   }
 
+  // FIX 1: si no hay kickoffs futuros → 'cerrado', no ''
   private updatePhaseDeadlineCountdown(): void {
     const matches = this.matches();
     if (!matches || matches.length === 0) {
@@ -353,8 +369,9 @@ export class Matches implements OnInit {
       .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
 
+    // FIX: todos los partidos ya empezaron → fase cerrada
     if (futureKickoffs.length === 0) {
-      this.phaseDeadlineCountdown.set('');
+      this.phaseDeadlineCountdown.set('cerrado');
       return;
     }
 
