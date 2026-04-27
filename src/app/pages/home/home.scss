@@ -29,6 +29,9 @@
       justify-content: space-around;
       align-items: center;
       padding: 2em 2em 1em 2em;
+      @media (max-width: 420px) {
+        gap: 1em;
+      }
       &-button {
         background-color: var(--c-primary);
         border: none;
@@ -37,6 +40,9 @@
         text-transform: uppercase;
         font-weight: bold;
         transition: 0.3s all ease-in-out;
+        @media (max-width: 420px) {
+          padding: 0.5em 3em;
+        }
         &:hover {
           transform: scale(1.05);
         }
