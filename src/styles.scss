@@ -43,6 +43,8 @@ body {
   padding: 0;
   height: 100%;
   background: var(--c-black);
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 button {
