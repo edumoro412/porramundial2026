@@ -29,6 +29,26 @@ export class Matches implements OnInit {
   cuartosButton = signal<boolean>(true);
   finalButton = signal<boolean>(true);
 
+  groupRankings = signal<
+    Map<
+      string,
+      {
+        team_id: number;
+        short_name: string;
+        img: string;
+        predicted_position: number;
+      }[]
+    >
+  >(new Map());
+  isSavingRankings = signal<Map<string, boolean>>(new Map());
+  rankingSaved = signal<Map<string, boolean>>(new Map());
+
+  private dragState: {
+    groupLetter: string;
+    fromIndex: number;
+    currentIndex: number;
+  } | null = null;
+
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -46,7 +66,6 @@ export class Matches implements OnInit {
       const response: MatchContent[] | null = await this.auth.getMatches(
         this.phase(),
       );
-
       if (!response || response.length === 0) return;
 
       const dieciseisavosMatches = await this.auth.getMatches('dieciseisavos');
@@ -78,6 +97,7 @@ export class Matches implements OnInit {
       }
 
       this.predictions.set(map);
+      await this.loadGroupRankings(user.id, response);
       this.updateCountdowns();
       this.updatePhaseDeadlineCountdown();
       this.countdownSub = interval(1000).subscribe(() => {
@@ -98,7 +118,6 @@ export class Matches implements OnInit {
 
   get matchesByGroup(): Map<string, MatchContent[]> {
     const map = new Map<string, MatchContent[]>();
-
     for (const match of this.matches()) {
       const key = match.group_letter
         ? `Grupo ${match.group_letter}`
@@ -106,13 +125,11 @@ export class Matches implements OnInit {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(match);
     }
-
     return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])));
   }
 
   async searchMatches(phase: string): Promise<void> {
     this.isTransitioning.set(true);
-
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     this.matches.set([]);
@@ -125,11 +142,9 @@ export class Matches implements OnInit {
     }
 
     const response: MatchContent[] | null = await this.auth.getMatches(phase);
-
     if (response && response.length > 0) {
       this.matches.set(response);
 
-      // Recarga predicciones para la nueva fase
       const map = new Map<number, Prediction>();
       for (const match of response) {
         const predict = await this.auth.getMatchPrediction(
@@ -139,11 +154,191 @@ export class Matches implements OnInit {
         if (predict) map.set(match.match_id, predict);
       }
       this.predictions.set(map);
+
+      if (phase === 'grupos') {
+        await this.loadGroupRankings(user.id, response);
+      }
+
       this.updatePhaseDeadlineCountdown();
       this.updateCountdowns();
     }
 
     setTimeout(() => this.isTransitioning.set(false), 50);
+  }
+
+  async loadGroupRankings(
+    userId: string,
+    matches: MatchContent[],
+  ): Promise<void> {
+    const groupTeams = new Map<
+      string,
+      { team_id: number; short_name: string; img: string }[]
+    >();
+
+    for (const match of matches) {
+      if (!match.group_letter) continue;
+      const key = match.group_letter;
+      if (!groupTeams.has(key)) groupTeams.set(key, []);
+      const arr = groupTeams.get(key)!;
+      if (!arr.find((t) => t.team_id === match.home_team_id)) {
+        arr.push({
+          team_id: match.home_team_id,
+          short_name: match.home_team_short_name,
+          img: match.home_team_img,
+        });
+      }
+      if (!arr.find((t) => t.team_id === match.away_team_id)) {
+        arr.push({
+          team_id: match.away_team_id,
+          short_name: match.away_team_short_name,
+          img: match.away_team_img,
+        });
+      }
+    }
+
+    const rankingsMap = new Map<
+      string,
+      {
+        team_id: number;
+        short_name: string;
+        img: string;
+        predicted_position: number;
+      }[]
+    >();
+
+    for (const [letter, teams] of groupTeams.entries()) {
+      const saved = await this.auth.getGroupStandingsPrediction(letter, userId);
+      let ordered: typeof teams;
+      if (saved.length > 0) {
+        ordered = [...teams].sort((a, b) => {
+          const posA =
+            saved.find((s) => s.team_id === a.team_id)?.predicted_position ??
+            99;
+          const posB =
+            saved.find((s) => s.team_id === b.team_id)?.predicted_position ??
+            99;
+          return posA - posB;
+        });
+      } else {
+        ordered = teams;
+      }
+      rankingsMap.set(
+        letter,
+        ordered.map((t, i) => ({ ...t, predicted_position: i + 1 })),
+      );
+    }
+
+    this.groupRankings.set(rankingsMap);
+  }
+
+  // ── Drag & drop ────────────────────────────────────────────────────
+
+  onDragStart(groupLetter: string, fromIndex: number): void {
+    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onDrop(event: DragEvent, groupLetter: string, toIndex: number): void {
+    event.preventDefault();
+    if (!this.dragState || this.dragState.groupLetter !== groupLetter) return;
+    const { fromIndex } = this.dragState;
+    if (fromIndex === toIndex) return;
+    this.reorderGroup(groupLetter, fromIndex, toIndex);
+    this.dragState = null;
+  }
+
+  onDragEnd(): void {
+    this.dragState = null;
+  }
+
+  onTouchStart(
+    event: TouchEvent,
+    groupLetter: string,
+    fromIndex: number,
+  ): void {
+    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
+  }
+
+  onTouchMove(event: TouchEvent, groupLetter: string): void {
+    if (!this.dragState) return;
+    const touch = event.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (!el) return;
+    const item = el.closest('[data-index]') as HTMLElement | null;
+    if (!item) return;
+    const toIndex = parseInt(item.dataset['index'] ?? '-1');
+    if (toIndex === -1 || toIndex === this.dragState.currentIndex) return;
+    this.reorderGroup(groupLetter, this.dragState.currentIndex, toIndex);
+    this.dragState.currentIndex = toIndex;
+  }
+
+  onTouchEnd(): void {
+    this.dragState = null;
+  }
+
+  private reorderGroup(
+    groupLetter: string,
+    fromIndex: number,
+    toIndex: number,
+  ): void {
+    const map = new Map(this.groupRankings());
+    const list = [...(map.get(groupLetter) ?? [])];
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(toIndex, 0, moved);
+    map.set(
+      groupLetter,
+      list.map((t, i) => ({ ...t, predicted_position: i + 1 })),
+    );
+    this.groupRankings.set(map);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+
+  async saveGroupRanking(groupLetter: string): Promise<void> {
+    if (this.isPhaseBlocked()) {
+      alert('🔒 Las predicciones de esta fase están cerradas');
+      return;
+    }
+
+    const saving = new Map(this.isSavingRankings());
+    saving.set(groupLetter, true);
+    this.isSavingRankings.set(saving);
+
+    const user = await this.auth.getCurrentSimpleUser();
+    if (!user?.id) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    const teams = this.groupRankings().get(groupLetter) ?? [];
+    const rankings = teams.map((t) => ({
+      team_id: t.team_id,
+      predicted_position: t.predicted_position,
+    }));
+    const response = await this.auth.saveGroupStandingsPrediction(
+      groupLetter,
+      user.id,
+      rankings,
+    );
+
+    saving.set(groupLetter, false);
+    this.isSavingRankings.set(new Map(saving));
+
+    if (response.success) {
+      const saved = new Map(this.rankingSaved());
+      saved.set(groupLetter, true);
+      this.rankingSaved.set(saved);
+      setTimeout(() => {
+        const s = new Map(this.rankingSaved());
+        s.delete(groupLetter);
+        this.rankingSaved.set(s);
+      }, 2500);
+    } else {
+      alert('Error al guardar: ' + response.message);
+    }
   }
 
   async uploadAllPredictions(): Promise<void> {
@@ -301,18 +496,14 @@ export class Matches implements OnInit {
     return new Date() > new Date(kickoff);
   }
 
-  // FIX 2: si no hay kickoffs futuros, la fase está bloqueada
   isPhaseBlocked(): boolean {
     const matches = this.matches();
     if (!matches || matches.length === 0) return false;
-
     const futureKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
       .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
-
     if (futureKickoffs.length === 0) return true;
-
     const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
     return hoursUntilFirst < 3;
   }
@@ -325,7 +516,6 @@ export class Matches implements OnInit {
     const now = new Date();
     const kickoff = new Date(match.kickoff_time);
     const minutesElapsed = (now.getTime() - kickoff.getTime()) / 60000;
-
     if (match.real_score_home !== null && match.real_score_away !== null)
       return 'finished';
     if (minutesElapsed >= 0 && minutesElapsed <= 105) return 'live';
@@ -356,38 +546,30 @@ export class Matches implements OnInit {
     this.countdowns.set(map);
   }
 
-  // FIX 1: si no hay kickoffs futuros → 'cerrado', no ''
   private updatePhaseDeadlineCountdown(): void {
     const matches = this.matches();
     if (!matches || matches.length === 0) {
       this.phaseDeadlineCountdown.set('');
       return;
     }
-
     const futureKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
       .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
-
-    // FIX: todos los partidos ya empezaron → fase cerrada
     if (futureKickoffs.length === 0) {
       this.phaseDeadlineCountdown.set('cerrado');
       return;
     }
-
     const deadline = futureKickoffs[0] - 3 * 60 * 60 * 1000;
     const diff = deadline - Date.now();
-
     if (diff <= 0) {
       this.phaseDeadlineCountdown.set('cerrado');
       return;
     }
-
     const d = Math.floor(diff / 86400000);
     const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-
     this.phaseDeadlineCountdown.set(
       d > 0 ? `${d}d ${h}:${m}:${s}` : `${h}:${m}:${s}`,
     );
