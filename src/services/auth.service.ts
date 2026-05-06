@@ -592,4 +592,65 @@ export class AuthService {
 
     return { success: true, data };
   }
+
+  async getGroupStandingsPrediction(
+    group_letter: string,
+    user_id: string,
+  ): Promise<{ team_id: number; predicted_position: number }[]> {
+    const { data, error } = await this.supabase
+      .from('group_standings_predictions')
+      .select('team_id, predicted_position')
+      .eq('group_letter', group_letter)
+      .eq('user_id', user_id)
+      .order('predicted_position', { ascending: true });
+
+    if (error) {
+      console.error('Error al obtener predicción de grupo:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async saveGroupStandingsPrediction(
+    group_letter: string,
+    user_id: string,
+    rankings: { team_id: number; predicted_position: number }[],
+  ): Promise<RegisterResponse> {
+    if (!rankings?.length) {
+      return { success: false, message: 'No hay clasificación para guardar' };
+    }
+
+    // Delete + Insert (patrón recomendado para reemplazo completo)
+    const { error: deleteError } = await this.supabase
+      .from('group_standings_predictions')
+      .delete()
+      .eq('group_letter', group_letter)
+      .eq('user_id', user_id);
+
+    if (deleteError) {
+      console.error(deleteError);
+      return {
+        success: false,
+        message: 'Error al eliminar clasificación anterior',
+      };
+    }
+
+    const rows = rankings.map((r) => ({
+      group_letter,
+      user_id,
+      team_id: r.team_id,
+      predicted_position: r.predicted_position,
+    }));
+
+    const { error: insertError } = await this.supabase
+      .from('group_standings_predictions')
+      .insert(rows);
+
+    if (insertError) {
+      console.error(insertError);
+      return { success: false, message: 'Error al guardar la clasificación' };
+    }
+
+    return { success: true, message: 'Clasificación guardada correctamente' };
+  }
 }
