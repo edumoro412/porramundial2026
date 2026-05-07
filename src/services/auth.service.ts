@@ -350,14 +350,19 @@ export class AuthService {
         .eq('id', playerId.user_id)
         .maybeSingle();
 
-      //Los puntos los tenemos que coger en algun mometno
+      const { data: scores } = await this.supabase
+        .from('user_scores')
+        .select('total_points')
+        .eq('user_id', playerId.user_id)
+        .maybeSingle();
+
       players.push({
         ...profile,
-        points: 0,
+        points: scores?.total_points ?? 0,
       });
     }
 
-    return players;
+    return players.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
   }
 
   async DeleteLeague(liga_id: string): Promise<any> {
