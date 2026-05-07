@@ -22,14 +22,25 @@
   <section class="league-detail__ranking">
     <h2 class="league-detail__ranking--title">RANKING</h2>
     <div class="league-detail__ranking--player">
-      @for( player of players; track player.id){
-      <div class="league-detail__ranking--player-div">
+      @for( player of players; track player.id; let i = $index){
+      <div
+        class="league-detail__ranking--player-div"
+        [class.is-me]="player.id === user?.id"
+      >
         <div class="league-detail__ranking--player-info">
-          <img
+          <p
+            [ngClass]="{'first': i === 0, 'second': i ===1, 'third': i===2, 'rest':i>2}"
+          >
+            {{i+1}}º
+          </p>
+          <div class="player-avatar">
+            {{ player.name.charAt(0).toUpperCase() }}
+          </div>
+          <!--   <img
             loading="lazy"
             [src]="player.avatar_url ?? 'user_img.png'"
             class="league-detail__ranking--player-info-img"
-          />
+          /> -->
           <p class="league-detail__ranking--player-info-name">
             {{player.name}}
           </p>

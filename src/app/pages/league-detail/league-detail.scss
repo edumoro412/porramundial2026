@@ -17,6 +17,43 @@
   }
 }
 
+.first {
+  color: rgb(223, 223, 32);
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(223, 223, 32);
+}
+.second {
+  color: #e8e8e8;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+.third {
+  color: #cd7f32;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 8px #cd7f32;
+}
+
+.rest {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.player-avatar {
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background-color: var(--c-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .league-detail {
   display: flex;
   flex-direction: column;
@@ -141,6 +178,10 @@
 
         &:hover {
           box-shadow: 0 0 2em var(--c-primary);
+        }
+        &.is-me {
+          border-left: 4px solid var(--c-primary);
+          background-color: rgba(50, 199, 113, 0.05);
         }
       }
 

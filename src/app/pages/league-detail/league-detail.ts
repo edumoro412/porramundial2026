@@ -5,10 +5,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LigaContent } from '../../interface/response';
 import { UserSimples } from '../../interface/user';
 import { DeleteLeague } from '../../components/modals/delete-league/delete-league';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-league-detail',
-  imports: [DeleteLeague],
+  imports: [DeleteLeague, NgClass],
   templateUrl: './league-detail.html',
   styleUrl: './league-detail.scss',
 })
