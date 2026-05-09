@@ -47,4 +47,5 @@ export interface Prediction {
   score_away: number;
   sign: string;
   winner_team_id?: number | null;
+  points_awarded?: number | null;
 }
