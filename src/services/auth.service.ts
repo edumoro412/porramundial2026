@@ -498,7 +498,7 @@ export class AuthService {
     const { data, error } = await this.supabase
       .from('match_predictions')
       .select(
-        'predicted_score_home, predicted_score_away, predicted_sign, predicted_winner_team_id',
+        'predicted_score_home, predicted_score_away, predicted_sign, predicted_winner_team_id, points_awarded',
       )
       .eq('match_id', match_id)
       .eq('user_id', user_id)
@@ -512,17 +512,47 @@ export class AuthService {
       score_away: data?.predicted_score_away,
       sign: data?.predicted_sign,
       winner_team_id: data?.predicted_winner_team_id ?? null,
+      points_awarded: data?.points_awarded,
     };
   }
 
   async getTeams(): Promise<TeamInterface[] | null> {
-    const { data, error } = await this.supabase.from('teams').select('*');
+    const { data, error } = await this.supabase
+      .from('teams')
+      .select('*')
+      .order('name', { ascending: true });
 
     if (error) {
       return null;
     }
 
     return data;
+  }
+
+  async getWinner(user_id: string): Promise<number | null> {
+    const { data, error } = await this.supabase
+      .from('winner_prediction')
+      .select('winner_prediction')
+      .eq('user_id', user_id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data.winner_prediction;
+  }
+  async getScorer(user_id: string): Promise<string | null> {
+    const { data, error } = await this.supabase
+      .from('top_scorer_bets')
+      .select('predicted_player_name')
+      .eq('user_id', user_id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+    return data.predicted_player_name;
   }
 
   async addMatch(
