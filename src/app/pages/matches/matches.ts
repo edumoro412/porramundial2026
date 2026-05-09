@@ -354,7 +354,10 @@ export class Matches implements OnInit {
         !this.matchPlayed(match.kickoff_time) && !this.isPhaseBlocked(),
     );
 
-    if (pendingMatches.length === 0) {
+    let successCount = 0;
+    let errorCount = 0;
+
+    if (pendingMatches.length === 0 && this.phase() !== 'grupos') {
       this.isSavingAll.set(false);
       if (this.isPhaseBlocked()) {
         alert('🔒 Las predicciones de esta fase están cerradas');
@@ -364,18 +367,56 @@ export class Matches implements OnInit {
       return;
     }
 
-    let successCount = 0;
-    let errorCount = 0;
-
     for (const match of pendingMatches) {
       const result = await this.uploadPrediction(match, true);
       if (result === true) successCount++;
       else if (result === false) errorCount++;
     }
 
+    if (this.phase() === 'grupos' && !this.isPhaseBlocked()) {
+      const user = await this.auth.getCurrentSimpleUser();
+      if (user?.id) {
+        const groupLetters = Array.from(this.groupRankings().keys());
+        for (const letter of groupLetters) {
+          const saving = new Map(this.isSavingRankings());
+          saving.set(letter, true);
+          this.isSavingRankings.set(saving);
+
+          const teams = this.groupRankings().get(letter) ?? [];
+          const rankings = teams.map((t) => ({
+            team_id: t.team_id,
+            predicted_position: t.predicted_position,
+          }));
+
+          const response = await this.auth.saveGroupStandingsPrediction(
+            letter,
+            user.id,
+            rankings,
+          );
+
+          const savingDone = new Map(this.isSavingRankings());
+          savingDone.set(letter, false);
+          this.isSavingRankings.set(savingDone);
+
+          if (response.success) {
+            const saved = new Map(this.rankingSaved());
+            saved.set(letter, true);
+            this.rankingSaved.set(saved);
+            setTimeout(() => {
+              const s = new Map(this.rankingSaved());
+              s.delete(letter);
+              this.rankingSaved.set(s);
+            }, 2500);
+          }
+        }
+      }
+    }
+
     this.isSavingAll.set(false);
 
-    if (errorCount === 0 && successCount > 0) {
+    if (this.phase() === 'grupos' && !this.isPhaseBlocked()) {
+      alert('✅ Predicciones y clasificaciones guardadas');
+    } else if (errorCount === 0 && successCount > 0) {
       alert(`✅ ${successCount} predicción(es) guardadas correctamente`);
     } else if (successCount === 0 && errorCount === 0) {
       alert('No hay predicciones nuevas que guardar');

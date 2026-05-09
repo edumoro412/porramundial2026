@@ -77,8 +77,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .matches {
-  overflow-y: auto;
-  max-height: 100vh;
   padding-bottom: 5em;
 
   &__save-all {

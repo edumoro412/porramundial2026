@@ -307,7 +307,12 @@
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        } } @else {
+        @if(matchStatus(match)==="finished"){
+        <p class="points-awarded">
+          @if(predictions().get(match.match_id)?.points_awarded != null){
+          +{{predictions().get(match.match_id)?.points_awarded}} }
+        </p>
+        } } } @else {
         <div>
           <input
             [id]="match.match_id+'-home'"
