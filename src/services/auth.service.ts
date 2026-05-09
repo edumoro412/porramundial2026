@@ -555,6 +555,46 @@ export class AuthService {
     return data.predicted_player_name;
   }
 
+  async saveSpecialPredictions(
+    user_id: string,
+    winner_team_id?: number | null,
+    top_scorer?: string | null,
+  ): Promise<RegisterResponse> {
+    if (winner_team_id != null) {
+      const { error: WinnerError } = await this.supabase
+        .from('winner_prediction')
+        .upsert(
+          { winner_prediction: winner_team_id, user_id },
+          { onConflict: 'user_id' },
+        );
+
+      if (WinnerError) {
+        return {
+          success: false,
+          message: 'Ocurrió un error al actualizar al equipo ganador',
+        };
+      }
+    }
+
+    if (top_scorer != null) {
+      const { error: ScorerError } = await this.supabase
+        .from('top_scorer_bets')
+        .upsert(
+          { predicted_player_name: top_scorer, user_id },
+          { onConflict: 'user_id' },
+        );
+
+      if (ScorerError) {
+        return {
+          success: false,
+          message: 'Ocurrió un error al actualizar al goleador',
+        };
+      }
+    }
+
+    return { success: true, message: 'Datos actualizados' };
+  }
+
   async addMatch(
     home_team_id: number,
     away_team_id: number,
