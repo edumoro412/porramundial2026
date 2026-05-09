@@ -4,7 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { UserSimple } from '../../interface/user';
 import { interval, Subscription } from 'rxjs';
-import { LigaContent } from '../../interface/response';
+import { LigaContent, TeamInterface } from '../../interface/response';
 import { CardLeague } from '../../components/card-league/card-league';
 
 @Component({
@@ -22,6 +22,8 @@ export class Home implements OnInit, OnDestroy {
   loading = signal(true);
   user: UserSimple | null = null;
   leagues = signal<LigaContent[] | null>(null);
+  teams = signal<TeamInterface[] | null>(null);
+  winner_team = signal<number | null>(null);
 
   days = signal('000');
   hours = signal('00');
@@ -52,8 +54,12 @@ export class Home implements OnInit, OnDestroy {
     console.log('Estas son la sligas', ligas);
     this.leagues.set(ligas ?? []);
     console.log('prueba', this.leagues());
-    this.loading.set(false);
+    const teams = await this.auth.getTeams();
+    this.teams.set(teams);
 
+    const winner_team = await this.auth.getWinner(this.user.id);
+    this.loading.set(false);
+    this.winner_team.set(winner_team);
     this.updateCountdown();
     this.countdownSub = interval(1000).subscribe(() => this.updateCountdown());
   }

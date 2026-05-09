@@ -35,6 +35,45 @@
     </section>
   </div>
   <div class="home__content">
+    <h2 class="home__leagues--title">Predicciones especiales</h2>
+    <section class="home__special-predictions">
+      <div class="home__special-predictions--card">
+        <h3 class="home__special-predictions--card-title">
+          Ganador del torneo
+        </h3>
+        <select
+          name="champSelect"
+          id="champSelect"
+          class="home__special-predictions--card-select"
+        >
+          <option value="">Selecciona un equipo</option>
+          @for(team of this.teams(); track team.team_id){
+          <option
+            [value]="team.team_id"
+            [selected]="team.team_id === this.winner_team()"
+            class="home__special-predictions--card-option"
+          >
+            <p class="home__special-predictions--card-option-name">
+              {{team.name}}
+            </p>
+          </option>
+
+          }
+        </select>
+      </div>
+      <div class="home__special-predictions--card">
+        <h3 class="home__special-predictions--card-title">Maximo goleador</h3>
+        <input
+          class="home__special-predictions--card-input"
+          type="text"
+          name="goleador"
+          id="goleador"
+        />
+      </div>
+    </section>
+    <button class="home__special-predictions--button">Guardar</button>
+  </div>
+  <div class="home__content">
     <section class="home__content--instructions">
       <h2 class="home__content--instructions-title">¿COMO SE PUNTUA?</h2>
 

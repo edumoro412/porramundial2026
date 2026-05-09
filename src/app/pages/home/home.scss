@@ -17,6 +17,71 @@
 }
 
 .home {
+  &__special-predictions {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 2em 1em 0 1em;
+    &--button {
+      background-color: var(--c-primary);
+      border: none;
+      padding: 0.8em 2em;
+      display: block;
+      margin: 0 auto;
+      border-radius: 2em;
+      text-transform: uppercase;
+      font-weight: bold;
+      transition: 0.3s all ease-in-out;
+      @media (max-width: 420px) {
+        padding: 0.5em 3em;
+      }
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+    &--card {
+      &-select {
+        background-color: var(--c-secondary);
+        border: none;
+        border-radius: 0.5em;
+        padding: 0.2em;
+        text-align: center;
+        color: var(--c-white);
+        font-size: 1em;
+        box-sizing: border-box;
+      }
+
+      background-color: var(--c-fourth);
+      padding: 1em 1.5em;
+      border-radius: 0.5em;
+      border-top: 1px solid var(--c-primary);
+      &-input {
+        background-color: var(--c-secondary);
+        border: none;
+        border-radius: 0.5em;
+        padding: 0.2em;
+        text-align: center;
+        color: var(--c-white);
+        font-size: 1em;
+        box-sizing: border-box;
+        &::placeholder {
+          color: rgb(150, 150, 150);
+        }
+        &:focus {
+          border: 1px solid var(--c-primary);
+        }
+      }
+      &-title {
+        font-family: "Barlow Condensed", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--c-primary);
+        margin-bottom: 0.6em;
+        font-size: 1rem;
+      }
+    }
+  }
   &__leagues {
     padding: 2em 2em 0 2em;
     &--title {
