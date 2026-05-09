@@ -24,6 +24,7 @@ export class Home implements OnInit, OnDestroy {
   leagues = signal<LigaContent[] | null>(null);
   teams = signal<TeamInterface[] | null>(null);
   winner_team = signal<number | null>(null);
+  top_scorer = signal<string | null>(null);
 
   days = signal('000');
   hours = signal('00');
@@ -60,6 +61,9 @@ export class Home implements OnInit, OnDestroy {
     const winner_team = await this.auth.getWinner(this.user.id);
     this.loading.set(false);
     this.winner_team.set(winner_team);
+
+    const top_scorer = await this.auth.getScorer(this.user.id);
+    this.top_scorer.set(top_scorer);
     this.updateCountdown();
     this.countdownSub = interval(1000).subscribe(() => this.updateCountdown());
   }
@@ -82,6 +86,29 @@ export class Home implements OnInit, OnDestroy {
     this.seconds.set(
       String(Math.floor((diff % 60000) / 1000)).padStart(2, '0'),
     );
+  }
+
+  async saveSpecialPredictions(
+    team_id: HTMLSelectElement,
+    scorer: HTMLInputElement,
+  ) {
+    const winnerId = team_id.value ? Number(team_id.value) : null;
+    const top_scorer = scorer.value.trim() || null;
+
+    if ((winnerId == null && top_scorer == null) || !this.user?.id) {
+      alert('❌ ¡No hay datos que actualizar!');
+    } else {
+      const response = await this.auth.saveSpecialPredictions(
+        this.user.id,
+        winnerId,
+        top_scorer,
+      );
+      if (!response.success) {
+        alert(response.message);
+      } else {
+        alert(response.message);
+      }
+    }
   }
 
   redirectInstrucciones() {

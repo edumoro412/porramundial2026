@@ -44,11 +44,13 @@
         <select
           name="champSelect"
           id="champSelect"
+          #champSelect
           class="home__special-predictions--card-select"
         >
           <option value="">Selecciona un equipo</option>
           @for(team of this.teams(); track team.team_id){
           <option
+            id="winner_pred_id"
             [value]="team.team_id"
             [selected]="team.team_id === this.winner_team()"
             class="home__special-predictions--card-option"
@@ -68,10 +70,17 @@
           type="text"
           name="goleador"
           id="goleador"
+          #goleador
+          [value]="top_scorer()?? ''"
         />
       </div>
     </section>
-    <button class="home__special-predictions--button">Guardar</button>
+    <button
+      (click)="saveSpecialPredictions(champSelect, goleador)"
+      class="home__special-predictions--button"
+    >
+      Guardar
+    </button>
   </div>
   <div class="home__content">
     <section class="home__content--instructions">

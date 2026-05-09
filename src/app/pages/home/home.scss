@@ -19,84 +19,126 @@
 .home {
   &__special-predictions {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-around;
     padding: 2em 1em 0 1em;
+    gap: 1em;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
     &--button {
       background-color: var(--c-primary);
       border: none;
       padding: 0.8em 2em;
       display: block;
-      margin: 0 auto;
+      margin: 1em auto 0 auto;
       border-radius: 2em;
       text-transform: uppercase;
       font-weight: bold;
       transition: 0.3s all ease-in-out;
-      @media (max-width: 420px) {
-        padding: 0.5em 3em;
+      cursor: pointer;
+
+      @media (max-width: 600px) {
+        width: 100%;
+        padding: 0.8em 1em;
       }
+
       &:hover {
         transform: scale(1.05);
       }
     }
-    &--card {
-      &-select {
-        background-color: var(--c-secondary);
-        border: none;
-        border-radius: 0.5em;
-        padding: 0.2em;
-        text-align: center;
-        color: var(--c-white);
-        font-size: 1em;
-        box-sizing: border-box;
-      }
 
+    &--card {
+      width: 25em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
       background-color: var(--c-fourth);
       padding: 1em 1.5em;
       border-radius: 0.5em;
       border-top: 1px solid var(--c-primary);
-      &-input {
+      box-sizing: border-box;
+      margin-bottom: 0.6em;
+
+      @media (max-width: 600px) {
+        width: 100%;
+        padding: 1em;
+      }
+
+      &-select {
         background-color: var(--c-secondary);
         border: none;
         border-radius: 0.5em;
-        padding: 0.2em;
+        padding: 0.4em 0.5em;
         text-align: center;
         color: var(--c-white);
         font-size: 1em;
         box-sizing: border-box;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      &-input {
+        background-color: var(--c-secondary);
+        border: none;
+        border-radius: 0.5em;
+        padding: 0.4em 0.5em;
+        text-align: center;
+        color: var(--c-white);
+        font-size: 1em;
+        box-sizing: border-box;
+        width: 100%;
+
         &::placeholder {
           color: rgb(150, 150, 150);
         }
+
         &:focus {
+          outline: none;
           border: 1px solid var(--c-primary);
         }
       }
+
       &-title {
         font-family: "Barlow Condensed", sans-serif;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
         color: var(--c-primary);
-        margin-bottom: 0.6em;
+        margin-bottom: 0.4em;
         font-size: 1rem;
       }
     }
   }
+
   &__leagues {
     padding: 2em 2em 0 2em;
+
+    @media (max-width: 600px) {
+      padding: 1.5em 1em 0 1em;
+    }
+
     &--title {
       text-transform: uppercase;
       border-bottom: 1px solid var(--c-primary);
       color: var(--c-primary);
     }
+
     &--buttons {
       display: flex;
       justify-content: space-around;
       align-items: center;
       padding: 2em 2em 1em 2em;
-      @media (max-width: 420px) {
-        gap: 1em;
+      gap: 1em;
+
+      @media (max-width: 600px) {
+        flex-direction: column;
+        padding: 1em 0;
       }
+
       &-button {
         background-color: var(--c-primary);
         border: none;
@@ -105,15 +147,20 @@
         text-transform: uppercase;
         font-weight: bold;
         transition: 0.3s all ease-in-out;
-        @media (max-width: 420px) {
-          padding: 0.5em 3em;
+        cursor: pointer;
+
+        @media (max-width: 600px) {
+          width: 100%;
+          padding: 0.8em 1em;
         }
+
         &:hover {
           transform: scale(1.05);
         }
       }
     }
   }
+
   &__button {
     display: block;
     margin: 2em;
@@ -124,10 +171,13 @@
     text-transform: uppercase;
     font-weight: bold;
     transition: 0.3s all ease-in-out;
+    cursor: pointer;
+
     &:hover {
       transform: scale(1.05);
     }
   }
+
   &__header {
     background-color: #141414;
     border-bottom: 0.5px solid gray;
@@ -200,7 +250,7 @@
   &__content {
     display: flex;
     flex-direction: column;
-    padding: 2em;
+    padding: 1em 2em;
 
     @media (max-width: 768px) {
       padding: 1em;
