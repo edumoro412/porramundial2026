@@ -134,7 +134,17 @@
               (predictions().get(match.match_id)?.sign) { ({{
               predictions().get(match.match_id)?.sign }}) }
             </p>
-            } } @else {
+            @if (matchStatus(match) === 'finished') { @if
+            (predictions().get(match.match_id)?.points_awarded != null) {
+            <p
+              class="points-awarded"
+              [class.points-awarded--zero]="predictions().get(match.match_id)?.points_awarded === 0"
+              [class.points-awarded--low]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 0 && (predictions().get(match.match_id)?.points_awarded ?? 0) <= 5"
+              [class.points-awarded--high]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 5"
+            >
+              +{{ predictions().get(match.match_id)?.points_awarded }} pts
+            </p>
+            } } } } @else {
             <div>
               <input
                 [id]="match.match_id+'-home'"
@@ -307,12 +317,17 @@
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        @if(matchStatus(match)==="finished"){
-        <p class="points-awarded">
-          @if(predictions().get(match.match_id)?.points_awarded != null){
-          +{{predictions().get(match.match_id)?.points_awarded}} }
+        @if (matchStatus(match) === 'finished') { @if
+        (predictions().get(match.match_id)?.points_awarded != null) {
+        <p
+          class="points-awarded"
+          [class.points-awarded--zero]="predictions().get(match.match_id)?.points_awarded === 0"
+          [class.points-awarded--low]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 0 && (predictions().get(match.match_id)?.points_awarded ?? 0) <= 5"
+          [class.points-awarded--high]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 5"
+        >
+          +{{ predictions().get(match.match_id)?.points_awarded }} pts
         </p>
-        } } } @else {
+        } } } } @else {
         <div>
           <input
             [id]="match.match_id+'-home'"

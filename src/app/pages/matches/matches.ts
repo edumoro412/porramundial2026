@@ -93,6 +93,7 @@ export class Matches implements OnInit {
           match.match_id,
           user.id,
         );
+        console.log('prediccion partido', match.match_id, predict);
         if (predict) map.set(match.match_id, predict);
       }
 

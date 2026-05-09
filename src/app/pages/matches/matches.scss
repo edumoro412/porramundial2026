@@ -473,3 +473,30 @@ input[type="number"]::-webkit-inner-spin-button {
 .your-prediction {
   color: var(--c-white);
 }
+
+.points-awarded {
+  margin-top: 1em;
+  font-size: 0.85em;
+  font-weight: 700;
+  padding: 0.3em 0.8em;
+  border-radius: 2em;
+  display: inline-block;
+
+  &--zero {
+    color: #888;
+    background-color: rgba(136, 136, 136, 0.1);
+    border: 1px solid rgba(136, 136, 136, 0.25);
+  }
+
+  &--low {
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+
+  &--high {
+    color: var(--c-primary);
+    background-color: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+  }
+}
