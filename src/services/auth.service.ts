@@ -505,14 +505,15 @@ export class AuthService {
       .maybeSingle();
 
     if (error) return null;
+    if (error || !data) return null;
 
     return {
       match_id,
-      score_home: data?.predicted_score_home,
-      score_away: data?.predicted_score_away,
-      sign: data?.predicted_sign,
-      winner_team_id: data?.predicted_winner_team_id ?? null,
-      points_awarded: data?.points_awarded,
+      score_home: data.predicted_score_home,
+      score_away: data.predicted_score_away,
+      sign: data.predicted_sign,
+      winner_team_id: data.predicted_winner_team_id ?? null,
+      points_awarded: data.points_awarded ?? null,
     };
   }
 
