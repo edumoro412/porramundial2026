@@ -17,6 +17,7 @@
 }
 
 .home {
+  padding-bottom: 5em;
   &__special-predictions {
     display: flex;
     align-items: stretch;
@@ -42,7 +43,7 @@
       cursor: pointer;
 
       @media (max-width: 600px) {
-        width: 100%;
+        width: 70%;
         padding: 0.8em 1em;
       }
 
@@ -150,7 +151,7 @@
         cursor: pointer;
 
         @media (max-width: 600px) {
-          width: 100%;
+          width: 50%;
           padding: 0.8em 1em;
         }
 
