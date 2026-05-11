@@ -784,4 +784,36 @@ export class AuthService {
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Posición guardada' };
   }
+
+  async getAllUsers(): Promise<UserSimples[]> {
+    const { data: users, error } = await this.supabase
+      .from('profiles')
+      .select(`*`);
+
+    if (error) {
+      console.error(error);
+      return [];
+    }
+
+    const result: UserSimples[] = [];
+
+    for (const user of users) {
+      const userId = user.id ?? user.user_id;
+
+      const { data: points, error: joinError } = await this.supabase
+        .from('user_scores')
+        .select('total_points')
+        .eq('user_id', userId)
+        .single();
+
+      if (joinError) {
+        result.push({ ...user, points: 0 });
+        continue;
+      }
+
+      result.push({ ...user, points: points?.total_points ?? 0 });
+    }
+
+    return result.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+  }
 }
