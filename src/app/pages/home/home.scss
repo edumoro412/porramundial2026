@@ -17,7 +17,9 @@
 }
 
 .home {
-  padding-bottom: 5em;
+  @media (max-width: 700px) {
+    padding-bottom: 5em;
+  }
   &__special-predictions {
     display: flex;
     align-items: stretch;
