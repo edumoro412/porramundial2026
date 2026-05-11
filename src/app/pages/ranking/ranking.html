@@ -1,1 +1,57 @@
-<p>ranking works!</p>
+@if(loading()){
+<div class="loading">
+  <img src="loading.gif" alt="Gif de loading" class="loading__gif" />
+</div>
+} @if(!loading()){
+<div class="league-detail">
+  <section class="league-detail__header">
+    <h2 class="league-detail__header--title">Ranking GLOBAL</h2>
+    <article class="league-detail__header--info">
+      <div class="league-detail__header--info-players">
+        🟢 {{ players.length }} Jugadores
+      </div>
+    </article>
+  </section>
+
+  <section class="league-detail__ranking">
+    <h2 class="league-detail__ranking--title">RANKING</h2>
+    <div class="league-detail__ranking--player">
+      @for(player of players; track player.id; let i = $index){
+      <div
+        class="league-detail__ranking--player-div"
+        [class.is-me]="player.id === user?.id"
+      >
+        <div class="league-detail__ranking--player-info">
+          <!--  <p
+            [ngClass]="{'first': i === 0, 'second': i === 1, 'third': i === 2, 'rest': i > 2}"
+          >
+            {{ i + 1 }}º
+          </p> -->
+          <p
+            [ngClass]="{
+  'first': getRank(i) === 1,
+  'second': getRank(i) === 2,
+  'third': getRank(i) === 3,
+  'rest': getRank(i) > 3
+}"
+          >
+            {{ getRank(i) }}º
+          </p>
+          <div class="player-avatar">
+            {{ player.name.charAt(0).toUpperCase() }}
+          </div>
+          <p class="league-detail__ranking--player-info-name">
+            {{ player.name }}
+          </p>
+        </div>
+        <div class="league-detail__ranking--player-info-points">
+          <p class="league-detail__ranking--player-info-points-p">
+            {{ player.points ?? 0 }} Pts.
+          </p>
+        </div>
+      </div>
+      }
+    </div>
+  </section>
+</div>
+}
