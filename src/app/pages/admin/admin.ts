@@ -3,18 +3,30 @@ import { AuthService } from '../../../services/auth.service';
 import { UserSimple } from '../../interface/user';
 import { Router } from '@angular/router';
 import { MatchContent, TeamInterface } from '../../interface/response';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-admin',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './admin.html',
   styleUrl: './admin.scss',
 })
 export class Admin implements OnInit {
   loading = signal<boolean>(false);
+  saving = signal<boolean>(false);
+
   teams: TeamInterface[] = [];
   matches: MatchContent[] = [];
   teamNames = new Map<number, string>();
+
+  winnerTeamId = signal<number | null>(null);
+  topScorer = signal<string>('');
+  selectedWinnerId: number | null = null;
+  topScorerInput: string = '';
+
+  groupMap: { [letter: string]: TeamInterface[] } = {};
+  groupLetters: string[] = [];
+  selectedGroup = signal<string>('');
 
   constructor(
     private auth: AuthService,
@@ -24,36 +36,93 @@ export class Admin implements OnInit {
   async ngOnInit() {
     try {
       this.loading.set(true);
+
       const user: UserSimple | null = await this.auth.getCurrentSimpleUser();
-      if (user?.id != 'b3c18940-f442-4892-a970-d23b73698062') {
+      if (!user?.is_admin) {
         this.router.navigateByUrl('/');
         return;
       }
 
-      const teamsResponse = await this.auth.getTeams();
-      if (!teamsResponse) return;
+      const [teamsResponse, matchesResponse, winnerTeamId, scorer] =
+        await Promise.all([
+          this.auth.getTeams(),
+          this.auth.getMatchesPlaying(),
+          this.auth.getWinnerTeam(),
+          this.auth.getTournamentScorer(),
+        ]);
 
-      this.teams = teamsResponse;
-
-      for (const team of this.teams) {
-        this.teamNames.set(team.team_id, team.name);
+      if (teamsResponse) {
+        this.teams = teamsResponse;
+        for (const team of this.teams) {
+          this.teamNames.set(team.team_id, team.name);
+        }
+        this.buildGroupMap();
       }
 
-      const matchesResponse = await this.auth.getMatchesPlaying();
-      if (!matchesResponse) {
-        return;
-      }
-      this.matches = matchesResponse;
-      console.log(
-        'estos son los partidos que estn en juego sin resultado',
-        this.matches,
-      );
+      if (matchesResponse) this.matches = matchesResponse;
 
-      return;
+      if (winnerTeamId != null) {
+        this.winnerTeamId.set(winnerTeamId);
+        this.selectedWinnerId = winnerTeamId;
+      }
+
+      if (scorer) {
+        this.topScorer.set(scorer);
+        this.topScorerInput = scorer;
+      }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  buildGroupMap() {
+    this.groupMap = {};
+    for (const team of this.teams) {
+      const g = team.group_letter;
+      if (!this.groupMap[g]) this.groupMap[g] = [];
+      this.groupMap[g].push(team);
+    }
+    this.groupLetters = Object.keys(this.groupMap).sort();
+    if (this.groupLetters.length) this.selectedGroup.set(this.groupLetters[0]);
+  }
+
+  getGroupTeams(): TeamInterface[] {
+    return (this.groupMap[this.selectedGroup()] ?? []).slice().sort((a, b) => {
+      const pa = (a as any).group_position ?? 99;
+      const pb = (b as any).group_position ?? 99;
+      return pa - pb;
+    });
+  }
+
+  async guardarPosicion(team_id: number, position: number | null) {
+    if (!position) return;
+    const res = await this.auth.saveTeamGroupPosition(team_id, position);
+    if (!res.success) alert(res.message);
+  }
+
+  async guardarCampeonYGoleador() {
+    if (!this.selectedWinnerId) {
+      alert('Selecciona un equipo campeón');
+      return;
+    }
+    if (!this.topScorerInput.trim()) {
+      alert('Escribe el nombre del máximo goleador');
+      return;
+    }
+    this.saving.set(true);
+    const res = await this.auth.addTournamentWinnerScorer(
+      Number(this.selectedWinnerId),
+      this.topScorerInput.trim(),
+    );
+    this.saving.set(false);
+    if (res.success) {
+      this.winnerTeamId.set(Number(this.selectedWinnerId));
+      this.topScorer.set(this.topScorerInput.trim());
+      alert('Campeón y goleador guardados');
+    } else {
+      alert(res.message);
     }
   }
 
@@ -67,21 +136,15 @@ export class Admin implements OnInit {
       alert('Por favor, selecciona una fecha y hora.');
       return;
     }
-
     const kickoff_time = new Date(kickoff).toISOString();
-
     const response = await this.auth.addMatch(
       Number(home_team_id),
       Number(away_team_id),
       kickoff_time,
       phase,
     );
-
-    if (response.success) {
-      alert('Partido añadido con éxito');
-    } else {
-      console.log(response.message);
-    }
+    if (response.success) alert('Partido añadido con éxito');
+    else console.log(response.message);
   }
 
   getName(id: number): string {
@@ -102,11 +165,7 @@ export class Admin implements OnInit {
       sign,
       Number(winnerId),
     );
-
-    if (respuesta.success) {
-      alert('Resultado guardado');
-    } else {
-      alert(respuesta.message);
-    }
+    if (respuesta.success) alert('Resultado guardado');
+    else alert(respuesta.message);
   }
 }

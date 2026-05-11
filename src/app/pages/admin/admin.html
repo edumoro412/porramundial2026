@@ -1,30 +1,91 @@
 @if(loading()){
 <div class="loading">
-  <img
-    src="/loading.gif"
-    alt="Icono de carga"
-    title="Icono de carga"
-    aria-label="Loading icon"
-    class="loading__gif"
-  />
+  <img src="/loading.gif" alt="Icono de carga" class="loading__gif" />
 </div>
-}@else {
+} @else {
 <div class="admin">
   <section class="admin__section">
-    <h2 class="admin__title">Añadir partido</h2>
+    <h2 class="admin__title">🏆 Campeón y máximo goleador</h2>
+    @if(winnerTeamId() || topScorer()){
+    <div class="admin__badges">
+      @if(winnerTeamId()){
+      <span class="admin__badge"
+        >Campeón actual: <strong>{{ getName(winnerTeamId()!) }}</strong></span
+      >
+      } @if(topScorer()){
+      <span class="admin__badge"
+        >Goleador actual: <strong>{{ topScorer() }}</strong></span
+      >
+      }
+    </div>
+    }
+    <div class="admin__form">
+      <select class="admin__select" [(ngModel)]="selectedWinnerId">
+        <option [ngValue]="null">— Selecciona el campeón —</option>
+        @for(team of teams; track team.team_id){
+        <option [ngValue]="team.team_id">{{ team.name }}</option>
+        }
+      </select>
+      <input
+        class="admin__input"
+        type="text"
+        placeholder="Nombre del máximo goleador"
+        [(ngModel)]="topScorerInput"
+      />
+      <button
+        class="admin__btn"
+        (click)="guardarCampeonYGoleador()"
+        [disabled]="saving()"
+      >
+        {{ saving() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </div>
+  </section>
+
+  <section class="admin__section">
+    <h2 class="admin__title">📊 Clasificación fase de grupos</h2>
+    <div class="admin__tabs">
+      @for(letter of groupLetters; track letter){
+      <button
+        class="admin__tab"
+        [class.admin__tab--active]="selectedGroup() === letter"
+        (click)="selectedGroup.set(letter)"
+      >
+        Grupo {{ letter }}
+      </button>
+      }
+    </div>
+    <div class="admin__group-table">
+      @for(team of getGroupTeams(); track team.team_id){
+      <div class="admin__group-row">
+        <span class="admin__group-name">{{ team.name }}</span>
+        <select
+          class="admin__select admin__select--pos"
+          [ngModel]="team.group_position ?? null"
+          (ngModelChange)="guardarPosicion(team.team_id, $event)"
+        >
+          <option [ngValue]="null">—</option>
+          <option [ngValue]="1">1º</option>
+          <option [ngValue]="2">2º</option>
+          <option [ngValue]="3">3º</option>
+          <option [ngValue]="4">4º</option>
+        </select>
+      </div>
+      }
+    </div>
+  </section>
+
+  <section class="admin__section">
+    <h2 class="admin__title">➕ Añadir partido</h2>
     <div class="admin__form">
       <select name="home_team" #home_team class="admin__select">
-        @for(team of this.teams; track team.team_id){
-        <option class="admin__select--option" [value]="team.team_id">
-          {{team.name}}
-        </option>
+        @for(team of teams; track team.team_id){
+        <option [value]="team.team_id">{{ team.name }}</option>
         }
       </select>
       <select name="away_team" #away_team class="admin__select">
-        @for(team of this.teams; track team.team_id){
-        <option class="admin__select--option" [value]="team.team_id">
-          {{team.name}}
-        </option>
+        @for(team of teams; track team.team_id){
+        <option [value]="team.team_id">{{ team.name }}</option>
         }
       </select>
       <select name="phase" #phase class="admin__select">
@@ -51,17 +112,19 @@
   </section>
 
   <section class="admin__section">
-    <h2 class="admin__title">Añadir resultado a un partido</h2>
-    @for(match of this.matches; track match.match_id){
+    <h2 class="admin__title">📝 Añadir resultado a un partido</h2>
+    @if(matches.length === 0){
+    <p class="admin__empty">No hay partidos en juego sin resultado.</p>
+    } @for(match of matches; track match.match_id){
     <div class="admin__match">
-      <span class="admin__match--teams">
-        {{getName(match.home_team_id)}} - {{getName(match.away_team_id)}}
-      </span>
+      <span class="admin__match--teams"
+        >{{ getName(match.home_team_id) }} - {{ getName(match.away_team_id)
+        }}</span
+      >
       <div class="admin__match--controls">
         <input
           class="admin__input admin__input--score"
           type="number"
-          [id]="match.match_id+'-home'"
           #homeScore
           min="0"
           placeholder="Local"
@@ -70,26 +133,21 @@
         <input
           class="admin__input admin__input--score"
           type="number"
-          [id]="match.match_id+'-away'"
           #awayScore
           min="0"
           placeholder="Visit."
         />
-        <select
-          class="admin__select admin__select--sign"
-          [id]="match.match_id+'-sign'"
-          #sign
-        >
+        <select class="admin__select admin__select--sign" #sign>
           <option value="1">1</option>
           <option value="X">X</option>
           <option value="2">2</option>
         </select>
         <select class="admin__select" #winnerid>
           <option [value]="match.home_team_id">
-            {{getName(match.home_team_id)}}
+            {{ getName(match.home_team_id) }}
           </option>
           <option [value]="match.away_team_id">
-            {{getName(match.away_team_id)}}
+            {{ getName(match.away_team_id) }}
           </option>
         </select>
         <button
