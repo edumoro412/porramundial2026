@@ -44,6 +44,10 @@ export const routes: Routes = [
         path: 'instructions',
         component: Instructions,
       },
+      {
+        path: 'ranking',
+        component: Ranking,
+      },
     ],
   },
   {
@@ -53,9 +57,5 @@ export const routes: Routes = [
   {
     path: 'register',
     component: Register,
-  },
-  {
-    path: 'ranking',
-    component: Ranking,
   },
 ];
