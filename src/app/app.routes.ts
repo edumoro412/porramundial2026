@@ -9,6 +9,7 @@ import { LeagueDetail } from './pages/league-detail/league-detail';
 import { Matches } from './pages/matches/matches';
 import { Admin } from './pages/admin/admin';
 import { Instructions } from './pages/instructions/instructions';
+import { Ranking } from './pages/ranking/ranking';
 
 export const routes: Routes = [
   {
@@ -52,5 +53,9 @@ export const routes: Routes = [
   {
     path: 'register',
     component: Register,
+  },
+  {
+    path: 'ranking',
+    component: Ranking,
   },
 ];
