@@ -52,6 +52,9 @@ export class LeaguesPage implements OnInit {
     }
   }
 
+  goToRanking() {
+    this.router.navigateByUrl('/ranking');
+  }
   async crearLiga(nombre: string, code: any) {
     this.creando.set(true);
     if (!this.user) {
