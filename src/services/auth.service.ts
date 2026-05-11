@@ -729,4 +729,59 @@ export class AuthService {
 
     return { success: true, message: 'Clasificación guardada correctamente' };
   }
+  async addTournamentWinnerScorer(
+    team_id: number,
+    top_scorer: string,
+  ): Promise<RegisterResponse> {
+    const { error } = await this.supabase
+      .from('tournament_result')
+      .update({ real_winner_team_id: team_id, real_top_scorer: top_scorer })
+      .eq('id', true);
+
+    if (error) {
+      return {
+        success: false,
+        message: 'Ocurrió un error al insertar al campeon y al goleador',
+      };
+    }
+
+    return { success: true, message: 'Campeon y goleador guardados' };
+  }
+
+  async getWinnerTeam(): Promise<number | null> {
+    const { data, error } = await this.supabase
+      .from('tournament_result')
+      .select('real_winner_team_id')
+      .eq('id', true)
+      .single();
+
+    if (!data || error) {
+      return null;
+    }
+    return data.real_winner_team_id;
+  }
+
+  async getTournamentScorer(): Promise<string | null> {
+    const { data, error } = await this.supabase
+      .from('tournament_result')
+      .select('real_top_scorer')
+      .eq('id', true)
+      .single();
+
+    if (error || !data) return null;
+    return data.real_top_scorer;
+  }
+
+  async saveTeamGroupPosition(
+    team_id: number,
+    position: number,
+  ): Promise<RegisterResponse> {
+    const { error } = await this.supabase
+      .from('teams')
+      .update({ group_position: position })
+      .eq('team_id', team_id);
+
+    if (error) return { success: false, message: error.message };
+    return { success: true, message: 'Posición guardada' };
+  }
 }
