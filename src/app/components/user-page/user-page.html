@@ -1,63 +1,147 @@
-@if(!loading()){
-
+@if(!loading()) {
 <div class="user">
-  <h1 class="user__title">Mi perfil</h1>
-  <section class="user__avatar">
-    <label for="avatar-upload" class="label">
-      <img
-        [src]="this.avatarUrl() || 'user_img.png'"
-        alt="Foto de perfil"
-        title="Avatar del usuario"
-        class="user__avatar--img"
+  <section class="user__header">
+    <div class="user__avatar">{{ getInitial() }}</div>
+
+    <div class="user__header--info">
+      <h1 class="user__header--name">{{ username() }}</h1>
+      <div class="user__header--badge">
+        <span class="badge__points">{{ totalPoints() }} pts</span>
+      </div>
+    </div>
+  </section>
+
+  @if(isOwnProfile()) {
+  <section class="user__edit">
+    <h2 class="user__edit--title">Cambiar nombre</h2>
+    <div class="user__edit--row">
+      <input
+        type="text"
+        [value]="username()"
+        [placeholder]="username() || ''"
+        class="user__edit--input"
+        #input
+        (input)="resetErrorMsg()"
       />
-    </label>
-    <input
-      type="file"
-      id="avatar-upload"
-      class="file"
-      accept="image/*"
-      style="display: none"
-      (change)="changeAvatar($event)"
-    />
-    <h2 class="user__avatar--name">{{username()}}</h2>
-    <h4 class="user__avatar--explain">Toca el avatar para cambiarlo</h4>
-  </section>
-  <section class="user__username">
-    <h2 class="user__username--title">Nombre de usuario</h2>
-    <input
-      type="text"
-      name="name"
-      id="name"
-      [value]="username()"
-      class="user__username--input"
-      #input
-      (change)="resetErrorMsg()"
-      [placeholder]="this.username()"
-    />
-    @if(this.errorMsg()){
-    <small class="error">{{this.errorMsg()}}</small>
+      <button
+        class="user__edit--btn"
+        (click)="cambiarNombre(input.value)"
+        [disabled]="disabled()"
+      >
+        {{ disabled() ? '...' : 'Guardar' }}
+      </button>
+    </div>
+    @if(errorMsg()) {
+    <small class="error">{{ errorMsg() }}</small>
     }
-    <button
-      class="user__username--button"
-      (click)="cambiarNombre(input.value)"
-      [disabled]="this.disabled()"
-    >
-      {{this.disabled() ? 'Guardando...' : 'Guardar'}}
-    </button>
   </section>
+  }
+
+  <section class="user__predictions">
+    <div class="user__predictions--tabs">
+      <button
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab() === 'matches'"
+        (click)="activeTab.set('matches')"
+      >
+        Partidos
+      </button>
+      <button
+        class="tab-btn"
+        [class.tab-btn--active]="activeTab() === 'specials'"
+        (click)="activeTab.set('specials')"
+      >
+        Especiales
+      </button>
+    </div>
+
+    @if(activeTab() === 'matches') { @if(matchPredictions().length === 0) {
+    <p class="user__predictions--empty">Sin predicciones registradas aún.</p>
+    } @else {
+    <div class="match-list">
+      @for(pred of matchPredictions(); track pred.match_id) {
+      <div
+        class="match-card"
+        [class.match-card--pending]="pred.points_awarded === null"
+      >
+        <div class="match-card__teams">
+          <div class="match-card__team">
+            <img
+              [src]="pred.match.home_team.flag_url"
+              class="match-card__flag"
+            />
+            <span>{{ pred.match.home_team.short_name }}</span>
+          </div>
+
+          <div class="match-card__scores">
+            @if(pred.match.real_score_home !== null) {
+            <span class="match-card__real">
+              {{ pred.match.real_score_home }} - {{ pred.match.real_score_away
+              }}
+            </span>
+            } @else {
+            <span class="match-card__pending-label">Por jugar</span>
+            }
+            <span class="match-card__predicted">
+              {{ pred.predicted_score_home }} - {{ pred.predicted_score_away }}
+            </span>
+          </div>
+
+          <div class="match-card__team match-card__team--right">
+            <span>{{ pred.match.away_team.short_name }}</span>
+            <img
+              [src]="pred.match.away_team.flag_url"
+              class="match-card__flag"
+            />
+          </div>
+        </div>
+
+        <div class="match-card__meta">
+          <span class="match-card__phase">{{ pred.match.phase }}</span>
+          <span class="match-card__sign"
+            >{{ getSignLabel(pred.predicted_sign) }}</span
+          >
+          @if(pred.points_awarded !== null) {
+          <span class="points {{ getPointsClass(pred.points_awarded) }}">
+            +{{ pred.points_awarded }} pts
+          </span>
+          } @else {
+          <span class="points points--pending">Pendiente</span>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    } } @if(activeTab() === 'specials') {
+    <div class="specials">
+      <div class="special-card">
+        <span class="special-card__icon">🏆</span>
+        <div class="special-card__info">
+          <span class="special-card__label">Campeón del torneo</span>
+          <span class="special-card__value">{{ winnerTeamName() || '—' }}</span>
+        </div>
+      </div>
+      <div class="special-card">
+        <span class="special-card__icon">⚽</span>
+        <div class="special-card__info">
+          <span class="special-card__label">Máximo goleador</span>
+          <span class="special-card__value">{{ topScorer() || '—' }}</span>
+        </div>
+      </div>
+    </div>
+    }
+  </section>
+
+  @if(isOwnProfile()) {
   <section class="user__logout">
     <button (click)="logOut()" class="user__logout--button">
-      Cerrar Sesion
+      Cerrar sesión
     </button>
   </section>
+  }
 </div>
 } @if(loading()) {
 <div class="loading-container">
-  <img
-    src="loading.gif"
-    alt="Icono de carga"
-    aria-label="Icono de carga"
-    class="loading-container__gif"
-  />
+  <img src="loading.gif" alt="Cargando" class="loading-container__gif" />
 </div>
 }
