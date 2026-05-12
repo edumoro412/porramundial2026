@@ -83,21 +83,29 @@ export class UserPage implements OnInit {
   async cambiarNombre(nombre: string) {
     this.errorMsg.set('');
     this.disabled.set(true);
-    try {
-      if (!nombre || !this.currentUser) return;
-      const response = await this.auth.updateUserName(
-        this.currentUser.id,
-        nombre,
-      );
-      if (!response.success) {
-        this.errorMsg.set(response.message);
-        return;
-      }
-      this.username.set(nombre);
-    } catch (error) {
-      console.log(error);
-    } finally {
+    if (nombre.trim().length < 2) {
+      this.errorMsg.set('Debes poner un nombre con más de 2 caracteres');
       this.disabled.set(false);
+    } else if (nombre.trim().length > 11) {
+      this.errorMsg.set('Debes poner un nombre con menos de 11 caracteres');
+      this.disabled.set(false);
+    } else {
+      try {
+        if (!nombre || !this.currentUser) return;
+        const response = await this.auth.updateUserName(
+          this.currentUser.id,
+          nombre,
+        );
+        if (!response.success) {
+          this.errorMsg.set(response.message);
+          return;
+        }
+        this.username.set(nombre);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        this.disabled.set(false);
+      }
     }
   }
 
