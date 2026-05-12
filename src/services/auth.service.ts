@@ -816,4 +816,54 @@ export class AuthService {
 
     return result.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
   }
+
+  async getUserMatchPredictions(user_id: string): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('match_predictions')
+      .select(
+        `
+      match_id,
+      predicted_score_home,
+      predicted_score_away,
+      predicted_sign,
+      predicted_winner_team_id,
+      points_awarded,
+      match:matches!match_predictions_match_id_fkey (
+        kickoff_time,
+        phase,
+        real_score_home,
+        real_score_away,
+        home_team:teams!matches_home_team_id_fkey (name, short_name, flag_url),
+        away_team:teams!matches_away_team_id_fkey (name, short_name, flag_url)
+      )
+    `,
+      )
+      .eq('user_id', user_id)
+      .order('match_id', { ascending: true });
+
+    if (error || !data) return [];
+    return data;
+  }
+
+  async getUserProfile(user_id: string): Promise<UserSimple | null> {
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user_id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data;
+  }
+
+  async getUserTotalPoints(user_id: string): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('user_scores')
+      .select('total_points')
+      .eq('user_id', user_id)
+      .maybeSingle();
+
+    if (error || !data) return 0;
+    return data.total_points ?? 0;
+  }
 }
