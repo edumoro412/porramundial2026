@@ -46,4 +46,8 @@ export class Ranking implements OnInit {
     const prev = this.players[index - 1].points ?? 0;
     return current === prev ? this.getRank(index - 1) : index + 1;
   }
+
+  goToUserPage(user_id: string): void {
+    this.router.navigate(['/user', user_id]);
+  }
 }
