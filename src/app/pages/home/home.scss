@@ -15,7 +15,10 @@
     }
   }
 }
-
+.error {
+  font-weight: bold;
+  color: red;
+}
 .home {
   @media (max-width: 700px) {
     padding-bottom: 5em;
@@ -210,6 +213,12 @@
       display: flex;
       gap: 0.5em;
 
+      &-p {
+        color: var(--c-primary);
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 1.5em;
+      }
       &-time {
         background-color: #0f0f0f;
         padding: 0.5em 1em;

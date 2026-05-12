@@ -5,6 +5,8 @@
       Bienvenid@ de nuevo
       <span class="home__header--title-span">{{user?.name}}</span>
     </h1>
+    @if(!isPredictionsClosed()){
+
     <section class="home__header--countdown">
       <article class="home__header--countdown-time">
         <p class="p">Dias <span class="p-time"> {{days()}} </span></p>
@@ -19,6 +21,11 @@
         <p class="p">Segundos <span class="p-time"> {{seconds()}} </span></p>
       </article>
     </section>
+    }@else {
+    <section class="home__header--countdown">
+      <p class="home__header--countdown-p">🎉¡El mundial está en juego!</p>
+    </section>
+    }
   </div>
   <button class="home__button" (click)="redirectInstrucciones()">
     INSTRUCCIONES
@@ -46,6 +53,7 @@
           id="champSelect"
           #champSelect
           class="home__special-predictions--card-select"
+          [disabled]="isPredictionsClosed()"
         >
           <option value="">Selecciona un equipo</option>
           @for(team of this.teams(); track team.team_id){
@@ -72,15 +80,22 @@
           id="goleador"
           #goleador
           [value]="top_scorer()?? ''"
+          [disabled]="isPredictionsClosed()"
         />
       </div>
     </section>
+    @if(isPredictionsClosed()){
+    <p class="error">⛔ Estás predicciones están cerradas</p>
+    }@else {
+
     <button
+      [disabled]="isPredictionsClosed()"
       (click)="saveSpecialPredictions(champSelect, goleador)"
       class="home__special-predictions--button"
     >
       Guardar
     </button>
+    }
   </div>
   <div class="home__content">
     <section class="home__content--instructions">

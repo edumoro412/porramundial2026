@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { UserSimple } from '../../interface/user';
 import { interval, Subscription } from 'rxjs';
 import { LigaContent, TeamInterface } from '../../interface/response';
@@ -25,12 +25,13 @@ export class Home implements OnInit, OnDestroy {
   teams = signal<TeamInterface[] | null>(null);
   winner_team = signal<number | null>(null);
   top_scorer = signal<string | null>(null);
+  isPredictionsClosed = signal<boolean>(false);
 
   days = signal('000');
   hours = signal('00');
   minutes = signal('00');
   seconds = signal('00');
-  private target = new Date('2026-06-11T20:00:00');
+  private target = new Date('2026-06-11T20:00:00Z');
   private countdownSub!: Subscription;
 
   constructor(
@@ -74,7 +75,14 @@ export class Home implements OnInit, OnDestroy {
 
   private updateCountdown(): void {
     const diff = this.target.getTime() - new Date().getTime();
-    if (diff <= 0) return;
+    if (diff <= 0) {
+      this.isPredictionsClosed.set(true);
+      this.days.set('00');
+      this.hours.set('00');
+      this.minutes.set('00');
+      this.seconds.set('00');
+      return;
+    }
 
     this.days.set(String(Math.floor(diff / 86400000)).padStart(2, '0'));
     this.hours.set(
