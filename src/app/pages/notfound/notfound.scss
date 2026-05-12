@@ -3,7 +3,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2em;
+  padding: 1.5em;
+  box-sizing: border-box;
 
   &__content {
     display: flex;
@@ -11,20 +12,21 @@
     align-items: center;
     gap: 0.75em;
     text-align: center;
+    width: 100%;
     max-width: 360px;
   }
 
   &__code {
-    font-size: 6em;
+    font-size: clamp(4em, 20vw, 7em);
     font-weight: 900;
     color: var(--c-primary);
     letter-spacing: -0.03em;
     line-height: 1;
-    opacity: 0.55;
+    opacity: 0.15;
   }
 
   &__title {
-    font-size: 1.4em;
+    font-size: clamp(1em, 4vw, 1.4em);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -33,21 +35,23 @@
   }
 
   &__desc {
-    font-size: 0.9em;
+    font-size: clamp(0.8em, 3vw, 0.9em);
     color: rgba(255, 255, 255, 0.3);
     margin: 0;
     line-height: 1.6;
+    padding: 0 1em;
   }
 
   &__btn {
     margin-top: 1em;
-    padding: 0.65em 1.8em;
+    padding: 0.7em 2em;
+    width: min(100%, 16em);
     background-color: var(--c-white);
     color: #000;
     border: none;
     border-radius: 0.4em;
     font-weight: 700;
-    font-size: 0.8em;
+    font-size: clamp(0.75em, 3vw, 0.85em);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     cursor: pointer;
