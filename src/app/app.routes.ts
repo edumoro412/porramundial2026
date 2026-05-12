@@ -25,6 +25,10 @@ export const routes: Routes = [
         component: UserPage,
       },
       {
+        path: 'user/:id',
+        component: UserPage,
+      },
+      {
         path: 'leagues',
         component: LeaguesPage,
       },
