@@ -257,8 +257,8 @@ $transition: 0.25s ease;
   }
 
   &__flag {
-    width: clamp(1.4em, 5vw, 1.8em);
-    height: clamp(1em, 3.5vw, 1.3em);
+    width: 2em;
+    height: 2em;
     object-fit: cover;
     border-radius: 2px;
     flex-shrink: 0;
