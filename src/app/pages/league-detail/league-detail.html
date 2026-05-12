@@ -24,6 +24,7 @@
     <div class="league-detail__ranking--player">
       @for( player of players; track player.id; let i = $index){
       <div
+        (click)="goToUserPage(player.id)"
         class="league-detail__ranking--player-div"
         [class.is-me]="player.id === user?.id"
       >

@@ -72,4 +72,8 @@ export class LeagueDetail implements OnInit {
       console.log('Ocurrio un error: ', error);
     }
   }
+
+  goToUserPage(user_id: string): void {
+    this.router.navigate(['/user', user_id]);
+  }
 }
