@@ -10,6 +10,7 @@ import { Matches } from './pages/matches/matches';
 import { Admin } from './pages/admin/admin';
 import { Instructions } from './pages/instructions/instructions';
 import { Ranking } from './pages/ranking/ranking';
+import { NotFound } from './pages/notfound/notfound';
 
 export const routes: Routes = [
   {
@@ -61,5 +62,9 @@ export const routes: Routes = [
   {
     path: 'register',
     component: Register,
+  },
+  {
+    path: '**',
+    component: NotFound,
   },
 ];
