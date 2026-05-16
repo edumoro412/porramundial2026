@@ -22,9 +22,7 @@ export class Home implements OnInit, OnDestroy {
   loading = signal(true);
   user: UserSimple | null = null;
   leagues = signal<LigaContent[] | null>(null);
-  teams = signal<TeamInterface[] | null>(null);
-  winner_team = signal<number | null>(null);
-  top_scorer = signal<string | null>(null);
+
   isPredictionsClosed = signal<boolean>(false);
 
   days = signal('000');
@@ -56,15 +54,9 @@ export class Home implements OnInit, OnDestroy {
     console.log('Estas son la sligas', ligas);
     this.leagues.set(ligas ?? []);
     console.log('prueba', this.leagues());
-    const teams = await this.auth.getTeams();
-    this.teams.set(teams);
 
-    const winner_team = await this.auth.getWinner(this.user.id);
     this.loading.set(false);
-    this.winner_team.set(winner_team);
 
-    const top_scorer = await this.auth.getScorer(this.user.id);
-    this.top_scorer.set(top_scorer);
     this.updateCountdown();
     this.countdownSub = interval(1000).subscribe(() => this.updateCountdown());
   }
