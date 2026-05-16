@@ -539,7 +539,8 @@ export class Matches implements OnInit {
   }
 
   isPhaseBlocked(): boolean {
-    const matches = this.matches();
+    /* TESTEAR */
+    /*     const matches = this.matches();
     if (!matches || matches.length === 0) return false;
     const futureKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
@@ -547,11 +548,15 @@ export class Matches implements OnInit {
       .sort((a, b) => a - b);
     if (futureKickoffs.length === 0) return true;
     const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
-    return hoursUntilFirst < 3;
+    return hoursUntilFirst < 3; */
+
+    return false;
   }
 
   isInputDisabled(kickoff: string): boolean {
-    return this.matchPlayed(kickoff) || this.isPhaseBlocked();
+    /* TESTEAR */
+    /*     return this.matchPlayed(kickoff) || this.isPhaseBlocked(); */
+    return false;
   }
 
   matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
