@@ -1,9 +1,14 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { MatchContent, Prediction } from '../../interface/response';
+import {
+  MatchContent,
+  Prediction,
+  TeamInterface,
+} from '../../interface/response';
 import { AuthService } from '../../../services/auth.service';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { KeyValuePipe } from '@angular/common';
+import { UserSimple } from '../../interface/user';
 
 @Component({
   selector: 'app-matches',
@@ -28,6 +33,10 @@ export class Matches implements OnInit {
   semisButton = signal<boolean>(true);
   cuartosButton = signal<boolean>(true);
   finalButton = signal<boolean>(true);
+  winner_team = signal<number | null>(null);
+  top_scorer = signal<string | null>(null);
+  teams = signal<TeamInterface[] | null>(null);
+  user: UserSimple | null = null;
 
   groupRankings = signal<
     Map<
@@ -57,15 +66,29 @@ export class Matches implements OnInit {
   async ngOnInit(): Promise<void> {
     this.loading.set(true);
     try {
-      const user = await this.auth.getCurrentSimpleUser();
-      if (!user?.id) {
+      const userr = await this.auth.getCurrentSimpleUser();
+      if (!userr) {
         this.router.navigateByUrl('/login');
         return;
       }
-
+      this.user = userr;
       const response: MatchContent[] | null = await this.auth.getMatches(
         this.phase(),
       );
+
+      const team = await this.auth.getTeams();
+      this.teams.set(team);
+
+      const winner_team = await this.auth.getWinner(userr.id);
+
+      this.winner_team.set(winner_team);
+
+      const top_scorer = await this.auth.getScorer(userr.id);
+      this.top_scorer.set(top_scorer);
+
+      console.log(winner_team, 'id ganador');
+      console.log(top_scorer, ' max goleador');
+
       if (!response || response.length === 0) return;
 
       const dieciseisavosMatches = await this.auth.getMatches('dieciseisavos');
@@ -91,14 +114,14 @@ export class Matches implements OnInit {
       for (const match of response) {
         const predict = await this.auth.getMatchPrediction(
           match.match_id,
-          user.id,
+          userr.id,
         );
         console.log('prediccion partido', match.match_id, predict);
         if (predict) map.set(match.match_id, predict);
       }
 
       this.predictions.set(map);
-      await this.loadGroupRankings(user.id, response);
+      await this.loadGroupRankings(userr.id, response);
       this.updateCountdowns();
       this.updatePhaseDeadlineCountdown();
       this.countdownSub = interval(1000).subscribe(() => {
@@ -167,6 +190,29 @@ export class Matches implements OnInit {
     setTimeout(() => this.isTransitioning.set(false), 50);
   }
 
+  async saveSpecialPredictions(
+    team_id: HTMLSelectElement,
+    scorer: HTMLInputElement,
+  ) {
+    const user = await this.auth.getCurrentSimpleUser();
+    const winnerId = team_id.value ? Number(team_id.value) : null;
+    const top_scorer = scorer.value.trim() || null;
+
+    if ((winnerId == null && top_scorer == null) || !this.user?.id) {
+      alert('❌ ¡No hay datos que actualizar!');
+    } else {
+      const response = await this.auth.saveSpecialPredictions(
+        this.user.id,
+        winnerId,
+        top_scorer,
+      );
+      if (!response.success) {
+        alert(response.message);
+      } else {
+        alert(response.message);
+      }
+    }
+  }
   async loadGroupRankings(
     userId: string,
     matches: MatchContent[],

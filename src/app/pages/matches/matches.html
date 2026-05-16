@@ -195,7 +195,6 @@
         }
       </div>
 
-      <!-- CLASIFICACIÓN PREDICHA DEL GRUPO -->
       @if (groupRankings().get(entry.key.replace('Grupo ', '')); as ranking) {
       <div class="matches__group--ranking">
         <h4 class="matches__group--ranking-title">
@@ -400,6 +399,49 @@
   </div>
 
   <div class="matches__save-all" [class.is-loading]="isTransitioning()">
+    <div class="matches__specials">
+      <h2 class="matches__specials--title">Predicciones especiales</h2>
+      <section class="matches__specials--grid">
+        <div class="matches__specials--card">
+          <h3 class="matches__specials--card-title">🏆 Ganador del torneo</h3>
+          <select
+            name="champSelect"
+            id="champSelect"
+            #champSelect
+            class="matches__specials--card-select"
+          >
+            <option value="">Selecciona un equipo</option>
+            @for(team of this.teams(); track team.team_id){
+            <option
+              [value]="team.team_id"
+              [selected]="team.team_id === this.winner_team()"
+            >
+              {{ team.name }}
+            </option>
+            }
+          </select>
+        </div>
+        <div class="matches__specials--card">
+          <h3 class="matches__specials--card-title">⚽ Máximo goleador</h3>
+          <input
+            class="matches__specials--card-input"
+            type="text"
+            name="goleador"
+            id="goleador"
+            #goleador
+            placeholder="Nombre del jugador"
+            [value]="top_scorer() ?? ''"
+          />
+        </div>
+      </section>
+      <button
+        (click)="saveSpecialPredictions(champSelect, goleador)"
+        class="matches__specials--button"
+      >
+        Guardar predicciones especiales
+      </button>
+    </div>
+
     <button
       class="matches__save-all--button"
       (click)="uploadAllPredictions()"
