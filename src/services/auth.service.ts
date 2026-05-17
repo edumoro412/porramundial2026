@@ -838,6 +838,17 @@ export class AuthService {
     return map;
   }
 
+  async resetPassword(email: string): Promise<RegisterResponse> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password',
+    });
+    if (error) return { success: false, message: error.message };
+    return {
+      success: true,
+      message: 'Te hemos enviado un email para restablecer tu contraseña',
+    };
+  }
+
   async getUserMatchPredictions(user_id: string): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('match_predictions')
