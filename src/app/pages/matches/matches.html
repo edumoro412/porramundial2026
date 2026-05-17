@@ -231,21 +231,22 @@
           </div>
           }
         </div>
-        @if (!isPhaseBlocked()) {
-        <button
-          class="matches__group--ranking-save"
-          (click)="saveGroupRanking(entry.key.replace('Grupo ', ''))"
-          [disabled]="isSavingRankings().get(entry.key.replace('Grupo ', ''))"
-        >
-          @if (rankingSaved().get(entry.key.replace('Grupo ', ''))) { ✅
-          Guardado } @else if (isSavingRankings().get(entry.key.replace('Grupo
-          ', ''))) { Guardando... } @else { Guardar clasificación }
-        </button>
-        } @else {
+        @if (isPhaseBlocked()) {
         <p class="matches__group--ranking-closed">🔒 Clasificación cerrada</p>
         }
       </div>
-      }
+
+      @if (!isPhaseBlocked()) {
+      <button
+        class="matches__group--ranking-save"
+        (click)="saveGroup(entry.key.replace('Grupo ', ''), entry.value)"
+        [disabled]="isSavingGroup().get(entry.key.replace('Grupo ', ''))"
+      >
+        @if (groupSaved().get(entry.key.replace('Grupo ', ''))) { ✅ Guardado }
+        @else if (isSavingGroup().get(entry.key.replace('Grupo ', ''))) {
+        Guardando... } @else { Guardar grupo }
+      </button>
+      } }
     </div>
     } } @else { @for(match of this.matches(); track match.match_id){
     <div class="matches__matches--match">
@@ -316,7 +317,17 @@
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        @if (matchStatus(match) === 'finished') { @if
+        @if (match.phase !== 'grupos' && match.phase !== 'final' &&
+        predictions().get(match.match_id)?.winner_team_id) {
+        <small class="your-prediction">
+          Pasa:
+          <strong
+            >{{ predictions().get(match.match_id)?.winner_team_id ===
+            match.home_team_id ? match.home_team_short_name :
+            match.away_team_short_name }}</strong
+          >
+        </small>
+        } @if (matchStatus(match) === 'finished') { @if
         (predictions().get(match.match_id)?.points_awarded != null) {
         <p
           class="points-awarded"
@@ -369,7 +380,7 @@
             <option value="2">2</option>
           </select>
         </div>
-        @if (match.phase !== 'grupos') {
+        @if (match.phase !== 'grupos' && match.phase !== 'final') {
         <select
           [id]="match.match_id+'-winner'"
           class="matches__matches--prediction-input"
@@ -399,6 +410,7 @@
   </div>
 
   <div class="matches__save-all" [class.is-loading]="isTransitioning()">
+    @if (phase() === 'grupos') {
     <div class="matches__specials">
       <h2 class="matches__specials--title">Predicciones especiales</h2>
       <section class="matches__specials--grid">
@@ -441,11 +453,12 @@
         Guardar predicciones especiales
       </button>
     </div>
+    }
 
     <button
       class="matches__save-all--button"
       (click)="uploadAllPredictions()"
-      [disabled]="isSavingAll()"
+      [disabled]="isSavingAll() || isPhaseBlocked()"
     >
       {{ isSavingAll() ? 'Guardando...' : 'Guardar todos' }}
     </button>

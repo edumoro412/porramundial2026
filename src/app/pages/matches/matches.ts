@@ -28,6 +28,8 @@ export class Matches implements OnInit {
   errorMesage = signal<Map<number, string>>(new Map());
   predictions = signal<Map<number, Prediction>>(new Map());
   isSavingAll = signal<boolean>(false);
+  isSavingGroup = signal<Map<string, boolean>>(new Map());
+  groupSaved = signal<Map<string, boolean>>(new Map());
   dieciseiavosButton = signal<boolean>(true);
   octavosButton = signal<boolean>(true);
   semisButton = signal<boolean>(true);
@@ -72,55 +74,43 @@ export class Matches implements OnInit {
         return;
       }
       this.user = userr;
-      const response: MatchContent[] | null = await this.auth.getMatches(
-        this.phase(),
-      );
 
-      const team = await this.auth.getTeams();
-      this.teams.set(team);
+      // Una sola llamada para todos los partidos + datos en paralelo
+      const [allMatches, teamsResponse, winner_team, top_scorer] =
+        await Promise.all([
+          this.auth.getMatches(),
+          this.auth.getTeams(),
+          this.auth.getWinner(userr.id),
+          this.auth.getScorer(userr.id),
+        ]);
 
-      const winner_team = await this.auth.getWinner(userr.id);
+      if (teamsResponse) this.teams.set(teamsResponse);
+      if (winner_team != null) this.winner_team.set(winner_team);
+      if (top_scorer) this.top_scorer.set(top_scorer);
 
-      this.winner_team.set(winner_team);
+      if (!allMatches || allMatches.length === 0) return;
 
-      const top_scorer = await this.auth.getScorer(userr.id);
-      this.top_scorer.set(top_scorer);
+      // Detectar qué fases tienen partidos sin llamadas extra
+      const fases = allMatches.map((m) => m.phase);
+      if (!fases.includes('dieciseisavos')) this.dieciseiavosButton.set(false);
+      if (!fases.includes('octavos')) this.octavosButton.set(false);
+      if (!fases.includes('cuartos')) this.cuartosButton.set(false);
+      if (!fases.includes('semifinal')) this.semisButton.set(false);
+      if (!fases.includes('final')) this.finalButton.set(false);
 
-      console.log(winner_team, 'id ganador');
-      console.log(top_scorer, ' max goleador');
-
-      if (!response || response.length === 0) return;
-
-      const dieciseisavosMatches = await this.auth.getMatches('dieciseisavos');
-      const octavosMatches = await this.auth.getMatches('octavos');
-      const cuartosMatches = await this.auth.getMatches('cuartos');
-      const semisMatches = await this.auth.getMatches('semifinal');
-      const finalMatches = await this.auth.getMatches('final');
-
-      if (!dieciseisavosMatches || dieciseisavosMatches.length === 0)
-        this.dieciseiavosButton.set(false);
-      if (!octavosMatches || octavosMatches.length === 0)
-        this.octavosButton.set(false);
-      if (!cuartosMatches || cuartosMatches.length === 0)
-        this.cuartosButton.set(false);
-      if (!semisMatches || semisMatches.length === 0)
-        this.semisButton.set(false);
-      if (!finalMatches || finalMatches.length === 0)
-        this.finalButton.set(false);
+      // Solo partidos de grupos para mostrar inicialmente
+      const response = allMatches.filter((m) => m.phase === 'grupos');
+      if (response.length === 0) return;
 
       this.matches.set(response);
 
-      const map = new Map<number, Prediction>();
-      for (const match of response) {
-        const predict = await this.auth.getMatchPrediction(
-          match.match_id,
-          userr.id,
-        );
-        console.log('prediccion partido', match.match_id, predict);
-        if (predict) map.set(match.match_id, predict);
-      }
-
+      // Una sola llamada para todas las predicciones
+      const map = await this.auth.getMatchPredictions(
+        response.map((m) => m.match_id),
+        userr.id,
+      );
       this.predictions.set(map);
+
       await this.loadGroupRankings(userr.id, response);
       this.updateCountdowns();
       this.updatePhaseDeadlineCountdown();
@@ -169,14 +159,11 @@ export class Matches implements OnInit {
     if (response && response.length > 0) {
       this.matches.set(response);
 
-      const map = new Map<number, Prediction>();
-      for (const match of response) {
-        const predict = await this.auth.getMatchPrediction(
-          match.match_id,
-          user.id,
-        );
-        if (predict) map.set(match.match_id, predict);
-      }
+      // Una sola llamada para todas las predicciones de la fase
+      const map = await this.auth.getMatchPredictions(
+        response.map((m) => m.match_id),
+        user.id,
+      );
       this.predictions.set(map);
 
       if (phase === 'grupos') {
@@ -194,7 +181,10 @@ export class Matches implements OnInit {
     team_id: HTMLSelectElement,
     scorer: HTMLInputElement,
   ) {
-    const user = await this.auth.getCurrentSimpleUser();
+    if (this.isPhaseBlocked()) {
+      alert('🔒 Las predicciones especiales están cerradas');
+      return;
+    }
     const winnerId = team_id.value ? Number(team_id.value) : null;
     const top_scorer = scorer.value.trim() || null;
 
@@ -213,6 +203,7 @@ export class Matches implements OnInit {
       }
     }
   }
+
   async loadGroupRankings(
     userId: string,
     matches: MatchContent[],
@@ -243,6 +234,14 @@ export class Matches implements OnInit {
       }
     }
 
+    // Obtener todas las clasificaciones en paralelo
+    const letters = Array.from(groupTeams.keys());
+    const savedResults = await Promise.all(
+      letters.map((letter) =>
+        this.auth.getGroupStandingsPrediction(letter, userId),
+      ),
+    );
+
     const rankingsMap = new Map<
       string,
       {
@@ -253,8 +252,9 @@ export class Matches implements OnInit {
       }[]
     >();
 
-    for (const [letter, teams] of groupTeams.entries()) {
-      const saved = await this.auth.getGroupStandingsPrediction(letter, userId);
+    letters.forEach((letter, idx) => {
+      const teams = groupTeams.get(letter)!;
+      const saved = savedResults[idx];
       let ordered: typeof teams;
       if (saved.length > 0) {
         ordered = [...teams].sort((a, b) => {
@@ -273,7 +273,7 @@ export class Matches implements OnInit {
         letter,
         ordered.map((t, i) => ({ ...t, predicted_position: i + 1 })),
       );
-    }
+    });
 
     this.groupRankings.set(rankingsMap);
   }
@@ -344,15 +344,11 @@ export class Matches implements OnInit {
 
   // ──────────────────────────────────────────────────────────────────
 
-  async saveGroupRanking(groupLetter: string): Promise<void> {
+  async saveGroup(groupLetter: string, matches: MatchContent[]): Promise<void> {
     if (this.isPhaseBlocked()) {
       alert('🔒 Las predicciones de esta fase están cerradas');
       return;
     }
-
-    const saving = new Map(this.isSavingRankings());
-    saving.set(groupLetter, true);
-    this.isSavingRankings.set(saving);
 
     const user = await this.auth.getCurrentSimpleUser();
     if (!user?.id) {
@@ -360,31 +356,52 @@ export class Matches implements OnInit {
       return;
     }
 
+    const saving = new Map(this.isSavingGroup());
+    saving.set(groupLetter, true);
+    this.isSavingGroup.set(saving);
+
+    const pendingMatches = matches.filter(
+      (m) => !this.matchPlayed(m.kickoff_time),
+    );
+    let errorCount = 0;
+    for (const match of pendingMatches) {
+      const result = await this.uploadPrediction(match, true);
+      if (result === false) errorCount++;
+    }
+
     const teams = this.groupRankings().get(groupLetter) ?? [];
     const rankings = teams.map((t) => ({
       team_id: t.team_id,
       predicted_position: t.predicted_position,
     }));
+
     const response = await this.auth.saveGroupStandingsPrediction(
       groupLetter,
       user.id,
       rankings,
     );
 
-    saving.set(groupLetter, false);
-    this.isSavingRankings.set(new Map(saving));
+    const savingDone = new Map(this.isSavingGroup());
+    savingDone.set(groupLetter, false);
+    this.isSavingGroup.set(savingDone);
 
     if (response.success) {
-      const saved = new Map(this.rankingSaved());
+      const saved = new Map(this.groupSaved());
       saved.set(groupLetter, true);
-      this.rankingSaved.set(saved);
+      this.groupSaved.set(saved);
       setTimeout(() => {
-        const s = new Map(this.rankingSaved());
+        const s = new Map(this.groupSaved());
         s.delete(groupLetter);
-        this.rankingSaved.set(s);
+        this.groupSaved.set(s);
       }, 2500);
+    }
+
+    if (errorCount === 0) {
+      alert('✅ Grupo guardado correctamente');
     } else {
-      alert('Error al guardar: ' + response.message);
+      alert(
+        `✅ Clasificación guardada\n⚠️ ${errorCount} predicción(es) con errores`,
+      );
     }
   }
 
@@ -404,16 +421,6 @@ export class Matches implements OnInit {
     let successCount = 0;
     let errorCount = 0;
 
-    if (pendingMatches.length === 0 && this.phase() !== 'grupos') {
-      this.isSavingAll.set(false);
-      if (this.isPhaseBlocked()) {
-        alert('🔒 Las predicciones de esta fase están cerradas');
-      } else {
-        alert('No hay predicciones nuevas que guardar');
-      }
-      return;
-    }
-
     for (const match of pendingMatches) {
       const result = await this.uploadPrediction(match, true);
       if (result === true) successCount++;
@@ -425,35 +432,29 @@ export class Matches implements OnInit {
       if (user?.id) {
         const groupLetters = Array.from(this.groupRankings().keys());
         for (const letter of groupLetters) {
-          const saving = new Map(this.isSavingRankings());
-          saving.set(letter, true);
-          this.isSavingRankings.set(saving);
-
           const teams = this.groupRankings().get(letter) ?? [];
           const rankings = teams.map((t) => ({
             team_id: t.team_id,
             predicted_position: t.predicted_position,
           }));
-
-          const response = await this.auth.saveGroupStandingsPrediction(
+          await this.auth.saveGroupStandingsPrediction(
             letter,
             user.id,
             rankings,
           );
+        }
 
-          const savingDone = new Map(this.isSavingRankings());
-          savingDone.set(letter, false);
-          this.isSavingRankings.set(savingDone);
-
-          if (response.success) {
-            const saved = new Map(this.rankingSaved());
-            saved.set(letter, true);
-            this.rankingSaved.set(saved);
-            setTimeout(() => {
-              const s = new Map(this.rankingSaved());
-              s.delete(letter);
-              this.rankingSaved.set(s);
-            }, 2500);
+        const champSelect = document.getElementById(
+          'champSelect',
+        ) as HTMLSelectElement;
+        const goleador = document.getElementById(
+          'goleador',
+        ) as HTMLInputElement;
+        if (champSelect && goleador) {
+          const winnerId = champSelect.value ? Number(champSelect.value) : null;
+          const scorer = goleador.value.trim() || null;
+          if (winnerId != null || scorer != null) {
+            await this.auth.saveSpecialPredictions(user.id, winnerId, scorer);
           }
         }
       }
@@ -461,16 +462,10 @@ export class Matches implements OnInit {
 
     this.isSavingAll.set(false);
 
-    if (this.phase() === 'grupos' && !this.isPhaseBlocked()) {
-      alert('✅ Predicciones y clasificaciones guardadas');
-    } else if (errorCount === 0 && successCount > 0) {
-      alert(`✅ ${successCount} predicción(es) guardadas correctamente`);
-    } else if (successCount === 0 && errorCount === 0) {
-      alert('No hay predicciones nuevas que guardar');
+    if (errorCount === 0) {
+      alert('✅ Todo guardado correctamente');
     } else {
-      alert(
-        `✅ ${successCount} guardadas correctamente\n❌ ${errorCount} con errores`,
-      );
+      alert(`✅ ${successCount} guardadas\n❌ ${errorCount} con errores`);
     }
   }
 
@@ -585,8 +580,7 @@ export class Matches implements OnInit {
   }
 
   isPhaseBlocked(): boolean {
-    /* TESTEAR */
-    /*     const matches = this.matches();
+    const matches = this.matches();
     if (!matches || matches.length === 0) return false;
     const futureKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
@@ -594,15 +588,11 @@ export class Matches implements OnInit {
       .sort((a, b) => a - b);
     if (futureKickoffs.length === 0) return true;
     const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
-    return hoursUntilFirst < 3; */
-
-    return false;
+    return hoursUntilFirst < 3;
   }
 
   isInputDisabled(kickoff: string): boolean {
-    /* TESTEAR */
-    /*     return this.matchPlayed(kickoff) || this.isPhaseBlocked(); */
-    return false;
+    return this.matchPlayed(kickoff) || this.isPhaseBlocked();
   }
 
   matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
