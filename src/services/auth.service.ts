@@ -621,7 +621,7 @@ export class AuthService {
       .select('*')
       .is('real_score_home', null)
       .is('real_score_away', null)
-      .lte('kickoff_time', new Date().toISOString());
+      .order('kickoff_time', { ascending: true });
 
     if (error) {
       return null;
@@ -733,31 +733,25 @@ export class AuthService {
     team_id: number,
     top_scorer: string,
   ): Promise<RegisterResponse> {
-    const { error } = await this.supabase
-      .from('tournament_result')
-      .update({ real_winner_team_id: team_id, real_top_scorer: top_scorer })
-      .eq('id', true);
+    const { error } = await this.supabase.rpc('save_tournament_result', {
+      p_team_id: team_id,
+      p_top_scorer: top_scorer,
+    });
 
     if (error) {
-      return {
-        success: false,
-        message: 'Ocurrió un error al insertar al campeon y al goleador',
-      };
+      console.error('addTournamentWinnerScorer error:', JSON.stringify(error));
+      return { success: false, message: error.message };
     }
-
-    return { success: true, message: 'Campeon y goleador guardados' };
+    return { success: true, message: 'Campeón y goleador guardados' };
   }
-
   async getWinnerTeam(): Promise<number | null> {
     const { data, error } = await this.supabase
       .from('tournament_result')
       .select('real_winner_team_id')
-      .eq('id', true)
+      .eq('id', 1)
       .single();
 
-    if (!data || error) {
-      return null;
-    }
+    if (!data || error) return null;
     return data.real_winner_team_id;
   }
 
@@ -765,13 +759,12 @@ export class AuthService {
     const { data, error } = await this.supabase
       .from('tournament_result')
       .select('real_top_scorer')
-      .eq('id', true)
+      .eq('id', 1)
       .single();
 
     if (error || !data) return null;
     return data.real_top_scorer;
   }
-
   async saveTeamGroupPosition(
     team_id: number,
     position: number,
@@ -815,6 +808,34 @@ export class AuthService {
     }
 
     return result.sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
+  }
+
+  async getMatchPredictions(
+    match_ids: number[],
+    user_id: string,
+  ): Promise<Map<number, Prediction>> {
+    const { data, error } = await this.supabase
+      .from('match_predictions')
+      .select(
+        'match_id, predicted_score_home, predicted_score_away, predicted_sign, predicted_winner_team_id, points_awarded',
+      )
+      .eq('user_id', user_id)
+      .in('match_id', match_ids);
+
+    const map = new Map<number, Prediction>();
+    if (error || !data) return map;
+
+    for (const d of data) {
+      map.set(d.match_id, {
+        match_id: d.match_id,
+        score_home: d.predicted_score_home,
+        score_away: d.predicted_score_away,
+        sign: d.predicted_sign,
+        winner_team_id: d.predicted_winner_team_id ?? null,
+        points_awarded: d.points_awarded ?? null,
+      });
+    }
+    return map;
   }
 
   async getUserMatchPredictions(user_id: string): Promise<any[]> {
