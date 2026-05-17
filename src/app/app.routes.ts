@@ -11,6 +11,8 @@ import { Admin } from './pages/admin/admin';
 import { Instructions } from './pages/instructions/instructions';
 import { Ranking } from './pages/ranking/ranking';
 import { NotFound } from './pages/notfound/notfound';
+import { ForgotPassword } from './components/forgot-password/forgot-password';
+import { ResetPassword } from './components/reset-password/reset-password';
 
 export const routes: Routes = [
   {
@@ -63,6 +65,8 @@ export const routes: Routes = [
     path: 'register',
     component: Register,
   },
+  { path: 'forgot-password', component: ForgotPassword },
+  { path: 'reset-password', component: ResetPassword },
   {
     path: '**',
     component: NotFound,
