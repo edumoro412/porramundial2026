@@ -22,6 +22,8 @@
     "admin",
     "instructions",
     "ranking",
-    "notfound"
+    "notfound",
+    "forgot-pasword",
+    "reset-password"
   ]
 }
