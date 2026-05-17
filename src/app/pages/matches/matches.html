@@ -9,7 +9,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'grupos'"
-      (click)="searchMatches('grupos'); changePhase('grupos')"
+      (click)="changePhase('grupos')"
     >
       Fase de grupos
     </button>
@@ -17,7 +17,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'dieciseisavos'"
-      (click)="searchMatches('dieciseisavos'); changePhase('dieciseisavos')"
+      (click)="changePhase('dieciseisavos')"
     >
       Dieciseisavos
     </button>
@@ -25,7 +25,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'octavos'"
-      (click)="searchMatches('octavos'); changePhase('octavos')"
+      (click)="changePhase('octavos')"
     >
       Octavos
     </button>
@@ -33,7 +33,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'cuartos'"
-      (click)="searchMatches('cuartos'); changePhase('cuartos')"
+      (click)="changePhase('cuartos')"
     >
       Cuartos
     </button>
@@ -41,7 +41,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'semifinal'"
-      (click)="searchMatches('semifinal'); changePhase('semifinal')"
+      (click)="changePhase('semifinal')"
     >
       Semifinales
     </button>
@@ -49,7 +49,7 @@
     <button
       class="matches__header--button"
       [class.matches__header--button-selected]="phase() === 'final'"
-      (click)="searchMatches('final'); changePhase('final')"
+      (click)="changePhase('final')"
     >
       Final
     </button>

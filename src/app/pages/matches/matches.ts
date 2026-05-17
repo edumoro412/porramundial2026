@@ -30,11 +30,11 @@ export class Matches implements OnInit {
   isSavingAll = signal<boolean>(false);
   isSavingGroup = signal<Map<string, boolean>>(new Map());
   groupSaved = signal<Map<string, boolean>>(new Map());
-  dieciseiavosButton = signal<boolean>(true);
-  octavosButton = signal<boolean>(true);
-  semisButton = signal<boolean>(true);
-  cuartosButton = signal<boolean>(true);
-  finalButton = signal<boolean>(true);
+  dieciseiavosButton = signal<boolean>(false);
+  octavosButton = signal<boolean>(false);
+  semisButton = signal<boolean>(false);
+  cuartosButton = signal<boolean>(false);
+  finalButton = signal<boolean>(false);
   winner_team = signal<number | null>(null);
   top_scorer = signal<string | null>(null);
   teams = signal<TeamInterface[] | null>(null);
@@ -91,12 +91,12 @@ export class Matches implements OnInit {
       if (!allMatches || allMatches.length === 0) return;
 
       // Detectar qué fases tienen partidos sin llamadas extra
-      const fases = allMatches.map((m) => m.phase);
-      if (!fases.includes('dieciseisavos')) this.dieciseiavosButton.set(false);
-      if (!fases.includes('octavos')) this.octavosButton.set(false);
-      if (!fases.includes('cuartos')) this.cuartosButton.set(false);
-      if (!fases.includes('semifinal')) this.semisButton.set(false);
-      if (!fases.includes('final')) this.finalButton.set(false);
+      const fases = new Set(allMatches.map((m) => m.phase));
+      this.dieciseiavosButton.set(fases.has('dieciseisavos'));
+      this.octavosButton.set(fases.has('octavos'));
+      this.cuartosButton.set(fases.has('cuartos'));
+      this.semisButton.set(fases.has('semifinal'));
+      this.finalButton.set(fases.has('final'));
 
       // Solo partidos de grupos para mostrar inicialmente
       const response = allMatches.filter((m) => m.phase === 'grupos');
