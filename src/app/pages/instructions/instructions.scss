@@ -113,4 +113,41 @@ $warning-orange: #ffcc00;
     padding-top: 1rem;
     font-weight: 500;
   }
+
+  &__contact {
+    margin-top: 2.5rem;
+  }
+
+  &__card--contact {
+    max-width: 480px;
+    border-color: rgba($neon-green, 0.5);
+  }
+
+  &__contact-text {
+    color: $text-gray;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  &__contact-btn {
+    display: inline-block;
+    background: transparent;
+    color: $neon-green;
+    border: 1.5px solid $neon-green;
+    border-radius: 6px;
+    padding: 0.6rem 1.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease;
+    margin-top: auto;
+
+    &:hover {
+      background: $neon-green;
+      color: $bg-color;
+    }
+  }
 }
