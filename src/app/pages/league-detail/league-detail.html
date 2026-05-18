@@ -30,9 +30,14 @@
       >
         <div class="league-detail__ranking--player-info">
           <p
-            [ngClass]="{'first': i === 0, 'second': i ===1, 'third': i===2, 'rest':i>2}"
+            [ngClass]="{
+  'first': getRank(i) === 1,
+  'second': getRank(i) === 2,
+  'third': getRank(i) === 3,
+  'rest': getRank(i) > 3
+}"
           >
-            {{i+1}}º
+            {{ getRank(i) }}º
           </p>
           <div class="player-avatar">
             {{ player.name.charAt(0).toUpperCase() }}

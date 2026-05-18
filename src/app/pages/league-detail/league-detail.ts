@@ -54,6 +54,18 @@ export class LeagueDetail implements OnInit {
     }
   }
 
+  getRank(index: number): number {
+    if (!this.players || index < 0 || index >= this.players.length) {
+      return index + 1;
+    }
+    if (index === 0) return 1;
+
+    const prevPoints = this.players[index - 1].points ?? 0;
+    const currentPoints = this.players[index].points ?? 0;
+
+    return currentPoints === prevPoints ? this.getRank(index - 1) : index + 1;
+  }
+
   copyToTheClipboard(texto: string) {
     navigator.clipboard.writeText(texto).then(() => {
       alert('Codigo copiado');
