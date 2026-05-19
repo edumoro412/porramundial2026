@@ -219,7 +219,6 @@
             (drop)="!isPhaseBlocked() && onDrop($event, entry.key.replace('Grupo ', ''), i)"
             (dragend)="onDragEnd()"
             (touchstart)="!isPhaseBlocked() && onTouchStart($event, entry.key.replace('Grupo ', ''), i)"
-            (touchmove)="!isPhaseBlocked() && onTouchMove($event, entry.key.replace('Grupo ', ''))"
             (touchend)="!isPhaseBlocked() && onTouchEnd()"
           >
             <span class="ranking-pos">{{ i + 1 }}º</span>

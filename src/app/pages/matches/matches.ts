@@ -1,4 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  signal,
+  ElementRef,
+} from '@angular/core';
 import {
   MatchContent,
   Prediction,
@@ -16,7 +23,7 @@ import { UserSimple } from '../../interface/user';
   templateUrl: './matches.html',
   styleUrl: './matches.scss',
 })
-export class Matches implements OnInit {
+export class Matches implements OnInit, AfterViewInit, OnDestroy {
   countdowns = signal<Map<string, string>>(new Map());
   phaseDeadlineCountdown = signal<string>('');
   private countdownSub!: Subscription;
@@ -60,9 +67,12 @@ export class Matches implements OnInit {
     currentIndex: number;
   } | null = null;
 
+  private touchMoveHandler!: (e: TouchEvent) => void;
+
   constructor(
     private auth: AuthService,
     private router: Router,
+    private el: ElementRef,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -75,7 +85,6 @@ export class Matches implements OnInit {
       }
       this.user = userr;
 
-      // Una sola llamada para todos los partidos + datos en paralelo
       const [allMatches, teamsResponse, winner_team, top_scorer] =
         await Promise.all([
           this.auth.getMatches(),
@@ -90,7 +99,6 @@ export class Matches implements OnInit {
 
       if (!allMatches || allMatches.length === 0) return;
 
-      // Detectar qué fases tienen partidos sin llamadas extra
       const fases = new Set(allMatches.map((m) => m.phase));
       this.dieciseiavosButton.set(fases.has('dieciseisavos'));
       this.octavosButton.set(fases.has('octavos'));
@@ -98,13 +106,11 @@ export class Matches implements OnInit {
       this.semisButton.set(fases.has('semifinal'));
       this.finalButton.set(fases.has('final'));
 
-      // Solo partidos de grupos para mostrar inicialmente
       const response = allMatches.filter((m) => m.phase === 'grupos');
       if (response.length === 0) return;
 
       this.matches.set(response);
 
-      // Una sola llamada para todas las predicciones
       const map = await this.auth.getMatchPredictions(
         response.map((m) => m.match_id),
         userr.id,
@@ -123,6 +129,18 @@ export class Matches implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  ngAfterViewInit(): void {
+    this.touchMoveHandler = (event: TouchEvent) => {
+      if (this.dragState) {
+        event.preventDefault();
+        this.onTouchMove(event, this.dragState.groupLetter);
+      }
+    };
+    this.el.nativeElement.addEventListener('touchmove', this.touchMoveHandler, {
+      passive: false,
+    });
   }
 
   async changePhase(phase: string): Promise<void> {
@@ -159,7 +177,6 @@ export class Matches implements OnInit {
     if (response && response.length > 0) {
       this.matches.set(response);
 
-      // Una sola llamada para todas las predicciones de la fase
       const map = await this.auth.getMatchPredictions(
         response.map((m) => m.match_id),
         user.id,
@@ -234,7 +251,6 @@ export class Matches implements OnInit {
       }
     }
 
-    // Obtener todas las clasificaciones en paralelo
     const letters = Array.from(groupTeams.keys());
     const savedResults = await Promise.all(
       letters.map((letter) =>
@@ -564,6 +580,10 @@ export class Matches implements OnInit {
 
   ngOnDestroy(): void {
     this.countdownSub?.unsubscribe();
+    this.el.nativeElement.removeEventListener(
+      'touchmove',
+      this.touchMoveHandler,
+    );
   }
 
   formatKickoff(kickoff: string): string {
