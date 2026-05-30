@@ -696,21 +696,6 @@ export class AuthService {
       return { success: false, message: 'No hay clasificación para guardar' };
     }
 
-    // Delete + Insert (patrón recomendado para reemplazo completo)
-    const { error: deleteError } = await this.supabase
-      .from('group_standings_predictions')
-      .delete()
-      .eq('group_letter', group_letter)
-      .eq('user_id', user_id);
-
-    if (deleteError) {
-      console.error(deleteError);
-      return {
-        success: false,
-        message: 'Error al eliminar clasificación anterior',
-      };
-    }
-
     const rows = rankings.map((r) => ({
       group_letter,
       user_id,
@@ -718,12 +703,12 @@ export class AuthService {
       predicted_position: r.predicted_position,
     }));
 
-    const { error: insertError } = await this.supabase
+    const { error } = await this.supabase
       .from('group_standings_predictions')
-      .insert(rows);
+      .upsert(rows, { onConflict: 'user_id,group_letter,team_id' });
 
-    if (insertError) {
-      console.error(insertError);
+    if (error) {
+      console.error(error);
       return { success: false, message: 'Error al guardar la clasificación' };
     }
 
