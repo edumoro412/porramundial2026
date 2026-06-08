@@ -714,6 +714,7 @@ export class AuthService {
 
     return { success: true, message: 'Clasificación guardada correctamente' };
   }
+  
   async addTournamentWinnerScorer(
     team_id: number,
     top_scorer: string,

@@ -61,7 +61,9 @@ export class UserPage implements OnInit {
         await this.auth.getUserMatchPredictions(targetId),
       );
 
+      console.log('su target id es', targetId);
       const winnerId = await this.auth.getWinner(targetId);
+      console.log('Su ganador es', winnerId);
       if (winnerId) {
         const name = await this.auth.getTeamName(winnerId);
         this.winnerTeamName.set(name);
