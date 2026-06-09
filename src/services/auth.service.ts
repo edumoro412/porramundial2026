@@ -696,6 +696,19 @@ export class AuthService {
       return { success: false, message: 'No hay clasificación para guardar' };
     }
 
+    const { error: deleteError } = await this.supabase
+      .from('group_standings_predictions')
+      .delete()
+      .eq('group_letter', group_letter)
+      .eq('user_id', user_id);
+
+    if (deleteError) {
+      return {
+        success: false,
+        message: 'Error al limpiar la clasificación anterior',
+      };
+    }
+
     const rows = rankings.map((r) => ({
       group_letter,
       user_id,
@@ -705,16 +718,14 @@ export class AuthService {
 
     const { error } = await this.supabase
       .from('group_standings_predictions')
-      .upsert(rows, { onConflict: 'user_id,group_letter,team_id' });
+      .insert(rows);
 
     if (error) {
-      console.error(error);
       return { success: false, message: 'Error al guardar la clasificación' };
     }
 
     return { success: true, message: 'Clasificación guardada correctamente' };
   }
-  
   async addTournamentWinnerScorer(
     team_id: number,
     top_scorer: string,
