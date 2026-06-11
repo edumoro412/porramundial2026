@@ -420,6 +420,7 @@
             id="champSelect"
             #champSelect
             class="matches__specials--card-select"
+            [disabled]="isPhaseBlocked()"
           >
             <option value="">Selecciona un equipo</option>
             @for(team of this.teams(); track team.team_id){
@@ -442,15 +443,19 @@
             #goleador
             placeholder="Nombre del jugador"
             [value]="top_scorer() ?? ''"
+            [disabled]="isPhaseBlocked()"
           />
         </div>
       </section>
+      @if (!isPhaseBlocked()) {
+
       <button
         (click)="saveSpecialPredictions(champSelect, goleador)"
         class="matches__specials--button"
       >
         Guardar predicciones especiales
       </button>
+      }
     </div>
     }
 
