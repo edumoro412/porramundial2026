@@ -616,18 +616,47 @@ export class AuthService {
   }
 
   async getMatchesPlaying(): Promise<MatchContent[] | null> {
+    const now = new Date().toISOString();
+
     const { data, error } = await this.supabase
       .from('matches')
-      .select('*')
+      .select(
+        `
+      match_id,
+      phase,
+      real_score_home,
+      real_score_away,
+      kickoff_time,
+      home_team:teams!matches_home_team_id_fkey (team_id, name, short_name, flag_url),
+      away_team:teams!matches_away_team_id_fkey (team_id, name, short_name, flag_url)
+    `,
+      )
       .is('real_score_home', null)
       .is('real_score_away', null)
+      .lte('kickoff_time', now)
       .order('kickoff_time', { ascending: true });
 
-    if (error) {
-      return null;
-    }
+    if (error) return null;
+    if (!data || data.length === 0) return null;
 
-    return data;
+    return data.map((m: any) => ({
+      match_id: m.match_id,
+      phase: m.phase,
+      real_score_home: m.real_score_home,
+      real_score_away: m.real_score_away,
+      kickoff_time: m.kickoff_time,
+      real_winner_team_id: null,
+      home_team_id: m.home_team?.team_id ?? null,
+      home_team_name: m.home_team?.name ?? '',
+      home_team_short_name: m.home_team?.short_name ?? '',
+      home_team_img: m.home_team?.flag_url ?? '',
+      away_team_id: m.away_team?.team_id ?? null,
+      away_team_name: m.away_team?.name ?? '',
+      away_team_short_name: m.away_team?.short_name ?? '',
+      away_team_img: m.away_team?.flag_url ?? '',
+      played_at: undefined,
+      group_letter: undefined,
+    }));
   }
 
   async getTeamName(id: number): Promise<string | null> {
