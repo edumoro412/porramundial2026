@@ -602,12 +602,14 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   isPhaseBlocked(): boolean {
     const matches = this.matches();
     if (!matches || matches.length === 0) return false;
-    const futureKickoffs = matches
+
+    const allKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
-      .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
-    if (futureKickoffs.length === 0) return true;
-    const hoursUntilFirst = (futureKickoffs[0] - Date.now()) / (1000 * 60 * 60);
+
+    if (allKickoffs.length === 0) return false;
+
+    const hoursUntilFirst = (allKickoffs[0] - Date.now()) / (1000 * 60 * 60);
     return hoursUntilFirst < 3;
   }
 
@@ -655,20 +657,24 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       this.phaseDeadlineCountdown.set('');
       return;
     }
-    const futureKickoffs = matches
+
+    const allKickoffs = matches
       .map((m) => new Date(m.kickoff_time).getTime())
-      .filter((t) => t > Date.now())
       .sort((a, b) => a - b);
-    if (futureKickoffs.length === 0) {
+
+    if (allKickoffs.length === 0) {
       this.phaseDeadlineCountdown.set('cerrado');
       return;
     }
-    const deadline = futureKickoffs[0] - 3 * 60 * 60 * 1000;
+
+    const deadline = allKickoffs[0] - 3 * 60 * 60 * 1000;
     const diff = deadline - Date.now();
+
     if (diff <= 0) {
       this.phaseDeadlineCountdown.set('cerrado');
       return;
     }
+
     const d = Math.floor(diff / 86400000);
     const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
@@ -677,7 +683,6 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       d > 0 ? `${d}d ${h}:${m}:${s}` : `${h}:${m}:${s}`,
     );
   }
-
   isWinner(match: MatchContent, teamId: number): boolean {
     const winner = this.predictions().get(match.match_id)?.winner_team_id;
     if (!winner) return false;
