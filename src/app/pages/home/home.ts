@@ -29,7 +29,7 @@ export class Home implements OnInit, OnDestroy {
   hours = signal('00');
   minutes = signal('00');
   seconds = signal('00');
-  private target = new Date('2026-06-11T20:00:00Z');
+  private target = new Date('2026-06-11T19:00:00Z');
   private countdownSub!: Subscription;
 
   constructor(
