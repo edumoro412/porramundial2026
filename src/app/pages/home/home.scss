@@ -218,6 +218,10 @@
         text-transform: uppercase;
         font-weight: bold;
         font-size: 1.5em;
+        @media (max-width: 765px) {
+          margin: 0 auto;
+          font-size: 1em;
+        }
       }
       &-time {
         background-color: #0f0f0f;
