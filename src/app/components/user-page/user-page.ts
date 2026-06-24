@@ -28,6 +28,7 @@ export class UserPage implements OnInit {
   topScorer = signal<string | null>(null);
 
   activeTab = signal<'matches' | 'specials'>('matches');
+  nextMatchIndex = signal<number | null>(null);
 
   constructor(
     private auth: AuthService,
@@ -60,6 +61,11 @@ export class UserPage implements OnInit {
       this.matchPredictions.set(
         await this.auth.getUserMatchPredictions(targetId),
       );
+
+      const idx = this.matchPredictions().findIndex(
+        (p) => p.match.real_score_home === null,
+      );
+      this.nextMatchIndex.set(idx >= 0 ? idx : null);
 
       console.log('su target id es', targetId);
       const winnerId = await this.auth.getWinner(targetId);
@@ -133,5 +139,12 @@ export class UserPage implements OnInit {
     if (points <= 3) return 'points--low';
     if (points <= 7) return 'points--mid';
     return 'points--high';
+  }
+
+  scrollToNextMatch() {
+    const idx = this.nextMatchIndex();
+    if (idx === null) return;
+    const el = document.getElementById('match-' + idx);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }

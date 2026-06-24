@@ -180,6 +180,23 @@ $transition: 0.25s ease;
   }
 }
 
+.next-match-btn {
+  width: 100%;
+  padding: 0.6em 1em;
+  background-color: var(--c-primary);
+  border: none;
+  border-radius: 0.5em;
+  font-weight: bold;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform $transition;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
 .tab-btn {
   flex: 1;
   padding: 0.65em 0.5em;
@@ -225,6 +242,11 @@ $transition: 0.25s ease;
   &--pending {
     opacity: 0.6;
     border-left-color: rgb(100, 100, 120);
+  }
+
+  &--played {
+    border-left-color: rgb(34, 197, 94);
+    background-color: rgba(34, 197, 94, 0.06);
   }
 
   &__teams {

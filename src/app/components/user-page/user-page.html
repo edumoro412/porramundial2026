@@ -55,14 +55,20 @@
       </button>
     </div>
 
-    @if(activeTab() === 'matches') { @if(matchPredictions().length === 0) {
+    @if(activeTab() === 'matches') { @if(nextMatchIndex() !== null) {
+    <button class="next-match-btn" (click)="scrollToNextMatch()">
+      Ir al próximo partido
+    </button>
+    } @if(matchPredictions().length === 0) {
     <p class="user__predictions--empty">Sin predicciones registradas aún.</p>
     } @else {
     <div class="match-list">
-      @for(pred of matchPredictions(); track pred.match_id) {
+      @for(pred of matchPredictions(); track pred.match_id; let i = $index) {
       <div
         class="match-card"
         [class.match-card--pending]="pred.points_awarded === null"
+        [class.match-card--played]="pred.match.real_score_home !== null"
+        [id]="'match-' + i"
       >
         <div class="match-card__teams">
           <div class="match-card__team">
@@ -101,11 +107,12 @@
           <span class="match-card__sign"
             >{{ getSignLabel(pred.predicted_sign) }}</span
           >
-          @if(pred.points_awarded !== null) {
+          @if(pred.points_awarded !== null && pred.match.real_score_home !==
+          null) {
           <span class="points {{ getPointsClass(pred.points_awarded) }}">
             +{{ pred.points_awarded }} pts
           </span>
-          } @else {
+          } @else if(pred.match.real_score_home !== null) {
           <span class="points points--pending">Pendiente</span>
           }
         </div>
