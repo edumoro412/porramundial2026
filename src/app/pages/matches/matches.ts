@@ -55,6 +55,7 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
         short_name: string;
         img: string;
         predicted_position: number;
+        points_awarded: number;
       }[]
     >
   >(new Map());
@@ -265,6 +266,7 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
         short_name: string;
         img: string;
         predicted_position: number;
+        points_awarded: number;
       }[]
     >();
 
@@ -287,7 +289,12 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       }
       rankingsMap.set(
         letter,
-        ordered.map((t, i) => ({ ...t, predicted_position: i + 1 })),
+        ordered.map((t, i) => ({
+          ...t,
+          predicted_position: i + 1,
+          points_awarded:
+            saved.find((s) => s.team_id === t.team_id)?.points_awarded ?? 0,
+        })),
       );
     });
 
@@ -359,6 +366,21 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ──────────────────────────────────────────────────────────────────
+
+  getGroupPoints(groupLetter: string): number | null {
+    const ranking = this.groupRankings().get(groupLetter);
+    if (!ranking || ranking.length === 0) return null;
+    // Solo mostrar si la fase está cerrada (el admin ya metió resultados)
+    if (!this.isPhaseBlocked()) return null;
+    // Solo mostrar si hay algún equipo con puntos asignados (distintos de 0 por defecto)
+    const total = ranking.reduce((sum, t) => sum + (t.points_awarded ?? 0), 0);
+    // Devolver null si todos tienen 0 y ninguno tiene puntos reales aún
+    // Para distinguir "aún no calculado" de "calculado y sacaste 0",
+    // comprobamos si alguno tiene points_awarded > 0
+    const anyPoints = ranking.some((t) => (t.points_awarded ?? 0) > 0);
+    if (!anyPoints && total === 0) return null;
+    return total;
+  }
 
   async saveGroup(groupLetter: string, matches: MatchContent[]): Promise<void> {
     if (this.isPhaseBlocked()) {
@@ -683,6 +705,7 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       d > 0 ? `${d}d ${h}:${m}:${s}` : `${h}:${m}:${s}`,
     );
   }
+
   isWinner(match: MatchContent, teamId: number): boolean {
     const winner = this.predictions().get(match.match_id)?.winner_team_id;
     if (!winner) return false;

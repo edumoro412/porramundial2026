@@ -701,10 +701,12 @@ export class AuthService {
   async getGroupStandingsPrediction(
     group_letter: string,
     user_id: string,
-  ): Promise<{ team_id: number; predicted_position: number }[]> {
+  ): Promise<
+    { team_id: number; predicted_position: number; points_awarded: number }[]
+  > {
     const { data, error } = await this.supabase
       .from('group_standings_predictions')
-      .select('team_id, predicted_position')
+      .select('team_id, predicted_position, points_awarded') // añadir points_awarded
       .eq('group_letter', group_letter)
       .eq('user_id', user_id)
       .order('predicted_position', { ascending: true });
@@ -791,17 +793,19 @@ export class AuthService {
     if (error || !data) return null;
     return data.real_top_scorer;
   }
-  async saveTeamGroupPosition(
-    team_id: number,
-    position: number,
+  async saveGroupPositionsRPC(
+    groupLetter: string,
+    teamIds: number[],
+    positions: number[],
   ): Promise<RegisterResponse> {
-    const { error } = await this.supabase
-      .from('teams')
-      .update({ group_position: position })
-      .eq('team_id', team_id);
+    const { error } = await this.supabase.rpc('update_group_positions', {
+      p_group_letter: groupLetter,
+      p_team_ids: teamIds,
+      p_positions: positions,
+    });
 
     if (error) return { success: false, message: error.message };
-    return { success: true, message: 'Posición guardada' };
+    return { success: true, message: 'Grupo actualizado con éxito' };
   }
 
   async getAllUsers(): Promise<UserSimples[]> {

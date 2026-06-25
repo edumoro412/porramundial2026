@@ -231,7 +231,19 @@
           }
         </div>
         @if (isPhaseBlocked()) {
-        <p class="matches__group--ranking-closed">🔒 Clasificación cerrada</p>
+        <div class="matches__group--ranking-footer">
+          <p class="matches__group--ranking-closed">🔒 Clasificación cerrada</p>
+          @if (getGroupPoints(entry.key.replace('Grupo ', '')) !== null) {
+          <p
+            class="points-awarded matches__group--ranking-points"
+            [class.points-awarded--zero]="getGroupPoints(entry.key.replace('Grupo ', '')) === 0"
+            [class.points-awarded--low]="(getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) > 0 && (getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) <= 10"
+            [class.points-awarded--high]="(getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) > 10"
+          >
+            +{{ getGroupPoints(entry.key.replace('Grupo ', '')) }} pts
+          </p>
+          }
+        </div>
         }
       </div>
 
@@ -448,7 +460,6 @@
         </div>
       </section>
       @if (!isPhaseBlocked()) {
-
       <button
         (click)="saveSpecialPredictions(champSelect, goleador)"
         class="matches__specials--button"

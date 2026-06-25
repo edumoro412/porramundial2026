@@ -120,7 +120,7 @@ export class Admin implements OnInit {
     const teams = this.groupMap[this.selectedGroup()] ?? [];
     const positions = teams.map((t) => this.tempPositions[t.team_id]);
 
-    if (positions.some((p) => !p)) {
+    if (positions.some((p) => p === null || p === undefined)) {
       alert('Asigna una posición a los 4 equipos antes de guardar');
       return;
     }
@@ -133,39 +133,31 @@ export class Admin implements OnInit {
       return;
     }
 
-    // FIX: Solo enviar los equipos cuya posición realmente cambió.
-    // Así evitamos disparar el trigger innecesariamente en Supabase.
-    const teamsToUpdate = teams.filter(
-      (t) =>
-        this.tempPositions[t.team_id] !== ((t as any).group_position ?? null),
-    );
-
-    if (teamsToUpdate.length === 0) {
-      alert('No hay cambios que guardar');
-      return;
-    }
-
     this.savingGroup.set(true);
     try {
-      // Guardar SECUENCIALMENTE para evitar la condición de carrera
-      // en el trigger que comprueba si los 4 equipos del grupo ya están completos.
-      for (const t of teamsToUpdate) {
-        const result = await this.auth.saveTeamGroupPosition(
-          t.team_id,
-          this.tempPositions[t.team_id]!,
-        );
-        if (!result.success) {
-          alert('Error al guardar: ' + result.message);
-          return;
-        }
+      const teamIds = teams.map((t) => t.team_id);
+      const posValues = teams.map((t) => this.tempPositions[t.team_id]!);
+
+      // Llamada única a la base de datos
+      const result = await this.auth.saveGroupPositionsRPC(
+        this.selectedGroup(),
+        teamIds,
+        posValues,
+      );
+
+      if (!result.success) {
+        alert('Error al guardar: ' + result.message);
+        return;
       }
 
-      // Actualizar el modelo local para que el guard detecte cambios correctamente
+      // Actualizar el modelo local de Angular
       for (const team of teams) {
         (team as any).group_position = this.tempPositions[team.team_id];
       }
 
-      alert('Grupo guardado correctamente ✅');
+      alert(
+        '¡Grupo guardado y puntuaciones de todos los jugadores actualizadas! ✅',
+      );
     } catch (e) {
       alert('Error inesperado al guardar');
     } finally {
