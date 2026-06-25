@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class Admin implements OnInit {
   loading = signal<boolean>(false);
   saving = signal<boolean>(false);
+  savingGroup = signal<boolean>(false);
 
   teams: TeamInterface[] = [];
   matches: MatchContent[] = [];
@@ -27,6 +28,9 @@ export class Admin implements OnInit {
   groupMap: { [letter: string]: TeamInterface[] } = {};
   groupLetters: string[] = [];
   selectedGroup = signal<string>('');
+
+  // Posiciones temporales del grupo seleccionado (no se guardan hasta pulsar el botón)
+  tempPositions: { [team_id: number]: number | null } = {};
 
   constructor(
     private auth: AuthService,
@@ -85,7 +89,23 @@ export class Admin implements OnInit {
       this.groupMap[g].push(team);
     }
     this.groupLetters = Object.keys(this.groupMap).sort();
-    if (this.groupLetters.length) this.selectedGroup.set(this.groupLetters[0]);
+    if (this.groupLetters.length) {
+      this.selectedGroup.set(this.groupLetters[0]);
+      this.initTempPositions();
+    }
+  }
+
+  selectGroup(letter: string) {
+    this.selectedGroup.set(letter);
+    this.initTempPositions();
+  }
+
+  initTempPositions() {
+    this.tempPositions = {};
+    const teams = this.groupMap[this.selectedGroup()] ?? [];
+    for (const team of teams) {
+      this.tempPositions[team.team_id] = (team as any).group_position ?? null;
+    }
   }
 
   getGroupTeams(): TeamInterface[] {
@@ -96,10 +116,48 @@ export class Admin implements OnInit {
     });
   }
 
-  async guardarPosicion(team_id: number, position: number | null) {
-    if (!position) return;
-    const res = await this.auth.saveTeamGroupPosition(team_id, position);
-    if (!res.success) alert(res.message);
+  async guardarGrupo() {
+    const teams = this.groupMap[this.selectedGroup()] ?? [];
+    const positions = teams.map((t) => this.tempPositions[t.team_id]);
+
+    if (positions.some((p) => !p)) {
+      alert('Asigna una posición a los 4 equipos antes de guardar');
+      return;
+    }
+
+    const unique = new Set(positions);
+    if (unique.size !== 4) {
+      alert(
+        'Hay posiciones duplicadas, cada equipo debe tener una posición distinta',
+      );
+      return;
+    }
+
+    this.savingGroup.set(true);
+    try {
+      // Guardar SECUENCIALMENTE, no en paralelo, para evitar la condición de carrera
+      // en el trigger que comprueba si los 4 equipos del grupo ya están completos.
+      for (const t of teams) {
+        const result = await this.auth.saveTeamGroupPosition(
+          t.team_id,
+          this.tempPositions[t.team_id]!,
+        );
+        if (!result.success) {
+          alert('Error al guardar: ' + result.message);
+          return;
+        }
+      }
+
+      for (const team of teams) {
+        (team as any).group_position = this.tempPositions[team.team_id];
+      }
+
+      alert('Grupo guardado correctamente ✅');
+    } catch (e) {
+      alert('Error inesperado al guardar');
+    } finally {
+      this.savingGroup.set(false);
+    }
   }
 
   async guardarCampeonYGoleador() {

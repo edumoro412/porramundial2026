@@ -49,7 +49,7 @@
       <button
         class="admin__tab"
         [class.admin__tab--active]="selectedGroup() === letter"
-        (click)="selectedGroup.set(letter)"
+        (click)="selectGroup(letter)"
       >
         Grupo {{ letter }}
       </button>
@@ -61,8 +61,7 @@
         <span class="admin__group-name">{{ team.name }}</span>
         <select
           class="admin__select admin__select--pos"
-          [ngModel]="team.group_position ?? null"
-          (ngModelChange)="guardarPosicion(team.team_id, $event)"
+          [(ngModel)]="tempPositions[team.team_id]"
         >
           <option [ngValue]="null">—</option>
           <option [ngValue]="1">1º</option>
@@ -73,6 +72,13 @@
       </div>
       }
     </div>
+    <button
+      class="admin__btn admin__btn--save"
+      (click)="guardarGrupo()"
+      [disabled]="savingGroup()"
+    >
+      {{ savingGroup() ? 'Guardando…' : '💾 Guardar grupo' }}
+    </button>
   </section>
 
   <section class="admin__section">
