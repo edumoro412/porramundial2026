@@ -133,11 +133,23 @@ export class Admin implements OnInit {
       return;
     }
 
+    // FIX: Solo enviar los equipos cuya posición realmente cambió.
+    // Así evitamos disparar el trigger innecesariamente en Supabase.
+    const teamsToUpdate = teams.filter(
+      (t) =>
+        this.tempPositions[t.team_id] !== ((t as any).group_position ?? null),
+    );
+
+    if (teamsToUpdate.length === 0) {
+      alert('No hay cambios que guardar');
+      return;
+    }
+
     this.savingGroup.set(true);
     try {
-      // Guardar SECUENCIALMENTE, no en paralelo, para evitar la condición de carrera
+      // Guardar SECUENCIALMENTE para evitar la condición de carrera
       // en el trigger que comprueba si los 4 equipos del grupo ya están completos.
-      for (const t of teams) {
+      for (const t of teamsToUpdate) {
         const result = await this.auth.saveTeamGroupPosition(
           t.team_id,
           this.tempPositions[t.team_id]!,
@@ -148,6 +160,7 @@ export class Admin implements OnInit {
         }
       }
 
+      // Actualizar el modelo local para que el guard detecte cambios correctamente
       for (const team of teams) {
         (team as any).group_position = this.tempPositions[team.team_id];
       }
