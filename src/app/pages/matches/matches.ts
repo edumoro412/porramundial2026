@@ -329,23 +329,88 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
     matches: MatchContent[],
   ): Promise<void> {
     const map = new Map<string, any[]>();
+
+    const groups = new Map<string, MatchContent[]>();
+    for (const m of matches) {
+      if (!m.group_letter) continue;
+      if (!groups.has(m.group_letter)) groups.set(m.group_letter, []);
+      groups.get(m.group_letter)!.push(m);
+    }
+
+    for (const [letter, groupMatches] of groups) {
+      const teamsMap = new Map<number, any>();
+      for (const m of groupMatches) {
+        if (!teamsMap.has(m.home_team_id)) {
+          teamsMap.set(m.home_team_id, {
+            team_id: m.home_team_id,
+            short_name: m.home_team_short_name,
+            img: m.home_team_img,
+          });
+        }
+        if (!teamsMap.has(m.away_team_id)) {
+          teamsMap.set(m.away_team_id, {
+            team_id: m.away_team_id,
+            short_name: m.away_team_short_name,
+            img: m.away_team_img,
+          });
+        }
+      }
+
+      let teams = Array.from(teamsMap.values());
+
+      try {
+        const saved = await this.auth.getGroupStandingsPrediction(
+          letter,
+          userId,
+        );
+
+        if (saved?.length) {
+          teams = teams
+            .map((t) => {
+              const found = saved.find((r) => r.team_id === t.team_id);
+              return {
+                ...t,
+                predicted_position: found?.predicted_position ?? null,
+                points_awarded: found?.points_awarded ?? null,
+              };
+            })
+            .sort(
+              (a, b) =>
+                (a.predicted_position ?? 99) - (b.predicted_position ?? 99),
+            );
+        }
+      } catch (err) {
+        console.error(`Error cargando clasificación del grupo ${letter}:`, err);
+      }
+
+      map.set(letter, teams);
+    }
+
     this.groupRankings.set(map);
   }
 
   onDragStart(groupLetter: string, fromIndex: number): void {
     this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
   }
+
   onDragOver(event: DragEvent): void {
     event.preventDefault();
   }
+
   onDrop(event: DragEvent, groupLetter: string, toIndex: number): void {
     event.preventDefault();
-    if (!this.dragState) return;
+    if (!this.dragState || this.dragState.groupLetter !== groupLetter) {
+      this.dragState = null;
+      return;
+    }
+    this.reorderGroup(groupLetter, this.dragState.fromIndex, toIndex);
     this.dragState = null;
   }
+
   onDragEnd(): void {
     this.dragState = null;
   }
+
   onTouchStart(
     event: TouchEvent,
     groupLetter: string,
@@ -353,11 +418,55 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   ): void {
     this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
   }
+
   onTouchMove(event: TouchEvent, groupLetter: string): void {
     if (!this.dragState) return;
+    const touch = event.touches[0];
+    const items = Array.from(
+      this.el.nativeElement.querySelectorAll(
+        `[data-group="${groupLetter}"] .matches__group--ranking-item`,
+      ),
+    ) as HTMLElement[];
+
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].getBoundingClientRect();
+      if (touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+        this.dragState.currentIndex = i;
+        break;
+      }
+    }
   }
+
   onTouchEnd(): void {
+    if (this.dragState) {
+      this.reorderGroup(
+        this.dragState.groupLetter,
+        this.dragState.fromIndex,
+        this.dragState.currentIndex,
+      );
+    }
     this.dragState = null;
+  }
+
+  private reorderGroup(
+    groupLetter: string,
+    fromIndex: number,
+    toIndex: number,
+  ): void {
+    if (fromIndex === toIndex) return;
+    const rankings = new Map(this.groupRankings());
+    const teams = [...(rankings.get(groupLetter) ?? [])];
+    if (
+      fromIndex < 0 ||
+      fromIndex >= teams.length ||
+      toIndex < 0 ||
+      toIndex >= teams.length
+    )
+      return;
+    const [moved] = teams.splice(fromIndex, 1);
+    teams.splice(toIndex, 0, moved);
+    rankings.set(groupLetter, teams);
+    this.groupRankings.set(rankings);
   }
 
   ngOnDestroy(): void {
@@ -407,5 +516,117 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
 
   isWinner(match: MatchContent, teamId: number): boolean {
     return this.predictions().get(match.match_id)?.winner_team_id === teamId;
+  }
+
+  getMatchBlockCountdown(kickoff: string): string | null {
+    const blockTime = new Date(kickoff).getTime() - 3 * 60 * 60 * 1000;
+    const diff = blockTime - Date.now();
+    if (diff <= 0 || diff > 24 * 60 * 60 * 1000) return null;
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+
+  getGroupPoints(groupLetter: string): number | null {
+    const ranking = this.groupRankings().get(groupLetter);
+    if (!ranking || ranking.length === 0) return null;
+
+    if (!this.isPhaseFullyClosed()) return null;
+
+    const total = ranking.reduce((sum, t) => sum + (t.points_awarded ?? 0), 0);
+    const anyPoints = ranking.some((t) => (t.points_awarded ?? 0) > 0);
+
+    if (!anyPoints && total === 0) return null;
+
+    return total;
+  }
+
+  async saveGroup(groupLetter: string, matches: MatchContent[]): Promise<void> {
+    if (this.isPhaseFullyClosed()) {
+      alert('🔒 Las predicciones de esta fase están cerradas');
+      return;
+    }
+
+    const user = await this.auth.getCurrentSimpleUser();
+    if (!user?.id) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    const saving = new Map(this.isSavingGroup());
+    saving.set(groupLetter, true);
+    this.isSavingGroup.set(saving);
+
+    const pendingMatches = matches.filter(
+      (m) =>
+        !this.matchPlayed(m.kickoff_time) &&
+        !this.isMatchBlocked(m.kickoff_time),
+    );
+
+    let errorCount = 0;
+    for (const match of pendingMatches) {
+      const result = await this.uploadPrediction(match, true);
+      if (result === false) errorCount++;
+    }
+
+    const teams = this.groupRankings().get(groupLetter) ?? [];
+    const rankings = teams.map((t, index) => ({
+      team_id: t.team_id,
+      predicted_position: index + 1,
+    }));
+
+    const response = await this.auth.saveGroupStandingsPrediction(
+      groupLetter,
+      user.id,
+      rankings,
+    );
+
+    const savingDone = new Map(this.isSavingGroup());
+    savingDone.set(groupLetter, false);
+    this.isSavingGroup.set(savingDone);
+
+    if (response.success) {
+      const saved = new Map(this.groupSaved());
+      saved.set(groupLetter, true);
+      this.groupSaved.set(saved);
+      setTimeout(() => {
+        const s = new Map(this.groupSaved());
+        s.delete(groupLetter);
+        this.groupSaved.set(s);
+      }, 2500);
+    }
+
+    if (errorCount === 0) {
+      alert('✅ Grupo guardado correctamente');
+    } else {
+      alert(
+        `✅ Clasificación guardada\n⚠️ ${errorCount} predicción(es) con errores`,
+      );
+    }
+  }
+
+  async saveSpecialPredictions(
+    team_id: HTMLSelectElement,
+    scorer: HTMLInputElement,
+  ) {
+    if (this.isPhaseFullyClosed()) {
+      alert('🔒 Las predicciones especiales están cerradas');
+      return;
+    }
+
+    const winnerId = team_id.value ? Number(team_id.value) : null;
+    const top_scorer = scorer.value.trim() || null;
+
+    if ((winnerId == null && top_scorer == null) || !this.user?.id) {
+      alert('❌ ¡No hay datos que actualizar!');
+    } else {
+      const response = await this.auth.saveSpecialPredictions(
+        this.user.id,
+        winnerId,
+        top_scorer,
+      );
+      alert(response.message);
+    }
   }
 }

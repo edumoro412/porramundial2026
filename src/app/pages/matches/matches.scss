@@ -76,6 +76,17 @@ input[type="number"]::-webkit-inner-spin-button {
   text-align: center;
 }
 
+.match-block-countdown {
+  display: block;
+  text-align: center;
+  font-size: 0.72em;
+  font-weight: 600;
+  color: #f59e0b;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.3em;
+  letter-spacing: 0.03em;
+}
+
 .matches {
   padding-bottom: 5em;
 
