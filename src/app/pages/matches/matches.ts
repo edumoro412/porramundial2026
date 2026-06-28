@@ -244,11 +244,14 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
     const awayInput = document.getElementById(
       match.match_id + '-away',
     ) as HTMLInputElement;
-    const selectInput = document.getElementById(
+    const signSelect = document.getElementById(
       match.match_id + '-select',
     ) as HTMLSelectElement;
+    const winnerSelect = document.getElementById(
+      match.match_id + '-winner',
+    ) as HTMLSelectElement;
 
-    if (!homeInput?.value || !awayInput?.value || !selectInput?.value) {
+    if (!homeInput?.value || !awayInput?.value || !signSelect?.value) {
       if (!silent) this.setError(match.match_id, 'Completa todos los campos');
       return false;
     }
@@ -266,13 +269,19 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       return false;
     }
 
+    // === NUEVO: Leer el "Quién pasa" ===
+    let winnerTeamId: number | null = null;
+    if (winnerSelect && winnerSelect.value) {
+      winnerTeamId = Number(winnerSelect.value);
+    }
+
     const response = await this.auth.sendMatchPrediction(
       match.match_id,
       homeScore,
       awayScore,
       user.id,
-      selectInput.value,
-      null,
+      signSelect.value,
+      winnerTeamId, // ← Aquí estaba el bug
     );
 
     if (response.success) {
@@ -281,11 +290,12 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
         match_id: match.match_id,
         score_home: homeScore,
         score_away: awayScore,
-        sign: selectInput.value,
-        winner_team_id: null,
+        sign: signSelect.value,
+        winner_team_id: winnerTeamId,
       });
       this.predictions.set(updated);
       this.errorMesage.set(new Map());
+
       if (!silent) alert('✅ Predicción guardada');
       return true;
     } else {
