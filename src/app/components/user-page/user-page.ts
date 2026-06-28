@@ -141,6 +141,18 @@ export class UserPage implements OnInit {
     return 'points--high';
   }
 
+  // Una predicción se "bloquea" (deja de ser secreta) 3h antes del kickoff,
+  // igual que el cierre de predicciones en la pantalla de partidos.
+  isMatchLocked(kickoff: string): boolean {
+    if (!kickoff) return false;
+    return (new Date(kickoff).getTime() - Date.now()) / (1000 * 60 * 60) < 3;
+  }
+
+  // true si el usuario que está mirando puede ver esta predicción concreta
+  canSeePrediction(kickoff: string): boolean {
+    return this.isOwnProfile() || this.isMatchLocked(kickoff);
+  }
+
   scrollToNextMatch() {
     const idx = this.nextMatchIndex();
     if (idx === null) return;

@@ -87,10 +87,15 @@
             </span>
             } @else {
             <span class="match-card__pending-label">Por jugar</span>
-            }
+            } @if (canSeePrediction(pred.match.kickoff_time)) {
             <span class="match-card__predicted">
               {{ pred.predicted_score_home }} - {{ pred.predicted_score_away }}
             </span>
+            } @else {
+            <span class="match-card__predicted match-card__predicted--hidden">
+              🔒 Oculto
+            </span>
+            }
           </div>
 
           <div class="match-card__team match-card__team--right">
@@ -104,10 +109,11 @@
 
         <div class="match-card__meta">
           <span class="match-card__phase">{{ pred.match.phase }}</span>
+          @if (canSeePrediction(pred.match.kickoff_time)) {
           <span class="match-card__sign"
             >{{ getSignLabel(pred.predicted_sign) }}</span
           >
-          @if(pred.points_awarded !== null && pred.match.real_score_home !==
+          } @if(pred.points_awarded !== null && pred.match.real_score_home !==
           null) {
           <span class="points {{ getPointsClass(pred.points_awarded) }}">
             +{{ pred.points_awarded }} pts
