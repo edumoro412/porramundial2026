@@ -97,7 +97,7 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
         this.semisButton.set(fases.has('semifinal'));
         this.finalButton.set(fases.has('final'));
 
-        const response = allMatches.filter((m) => m.phase === 'grupos');
+        const response = allMatches.filter((m) => m.phase === this.phase());
         if (response.length) {
           this.matches.set(response);
           const map = await this.auth.getMatchPredictions(
@@ -105,7 +105,9 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
             userr.id,
           );
           this.predictions.set(map);
-          await this.loadGroupRankings(userr.id, response);
+          if (this.phase() === 'grupos') {
+            await this.loadGroupRankings(userr.id, response);
+          }
         }
       }
 
