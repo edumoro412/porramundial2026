@@ -188,6 +188,7 @@
               </select>
             </div>
 
+            <!-- Botón individual -->
             <button
               class="matches__matches--prediction-button"
               (click)="saveSingleMatch(match)"
@@ -218,7 +219,6 @@
         }
         <div
           class="matches__group--ranking-list"
-          [attr.data-group]="entry.key.replace('Grupo ', '')"
           [class.blocked]="isPhaseFullyClosed()"
         >
           @for (team of ranking; track team.team_id; let i = $index) {
@@ -314,15 +314,8 @@
 
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
-        @if (matchStatus(match) === 'upcoming') { @if
-        (getMatchBlockCountdown(match.kickoff_time)) {
-        <p class="match-block-countdown">
-          🔒 Cierra en: {{ getMatchBlockCountdown(match.kickoff_time) }}
-        </p>
-        } @else if (isInputDisabled(match.kickoff_time)) {
-        <p class="match-block-countdown">🔒 Predicción cerrada</p>
-        } } @if (matchStatus(match) === 'live' || matchStatus(match) ===
-        'finished' || isInputDisabled(match.kickoff_time)) { @if
+        @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished'
+        || isInputDisabled(match.kickoff_time)) { @if
         (!predictions().get(match.match_id) ||
         predictions().get(match.match_id)?.score_home == null ||
         predictions().get(match.match_id)?.score_away == null) {
@@ -399,28 +392,18 @@
             <option value="2">2</option>
           </select>
         </div>
-        @if (match.phase !== 'grupos' && match.phase !== 'final') {
-        <select
-          [id]="match.match_id+'-winner'"
-          class="matches__matches--prediction-input"
-          (change)="clearError(match.match_id)"
-          [disabled]="isInputDisabled(match.kickoff_time)"
+
+        <button
+          class="matches__matches--prediction-button"
+          (click)="saveSingleMatch(match)"
+          [disabled]="isSavingMatch().get(match.match_id) || isInputDisabled(match.kickoff_time)"
         >
-          <option value="">¿Quién pasa?</option>
-          <option
-            [value]="match.home_team_id"
-            [selected]="isWinner(match, match.home_team_id)"
-          >
-            {{match.home_team_short_name}}
-          </option>
-          <option
-            [value]="match.away_team_id"
-            [selected]="isWinner(match, match.away_team_id)"
-          >
-            {{match.away_team_short_name}}
-          </option>
-        </select>
-        } @if(errorMesage().get(match.match_id)){
+          @if (matchSaved().get(match.match_id)) { ✅ Guardado } @else if
+          (isSavingMatch().get(match.match_id)) { Guardando... } @else { Guardar
+          partido }
+        </button>
+
+        @if(errorMesage().get(match.match_id)){
         <small class="error">{{ errorMesage().get(match.match_id) }}</small>
         } }
       </div>
