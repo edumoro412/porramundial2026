@@ -28,7 +28,7 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   phaseDeadlineCountdown = signal<string>('');
   private countdownSub!: Subscription;
 
-  phase = signal<string>('grupos');
+  phase = signal<string>('dieciseisavos');
   matches = signal<MatchContent[]>([]);
   loading = signal<boolean>(false);
   isTransitioning = signal<boolean>(false);
