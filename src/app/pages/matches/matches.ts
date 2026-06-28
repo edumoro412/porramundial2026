@@ -28,46 +28,37 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   phaseDeadlineCountdown = signal<string>('');
   private countdownSub!: Subscription;
 
-  phase = signal<string>('dieciseisavos');
+  phase = signal<string>('grupos');
   matches = signal<MatchContent[]>([]);
   loading = signal<boolean>(false);
   isTransitioning = signal<boolean>(false);
   errorMesage = signal<Map<number, string>>(new Map());
   predictions = signal<Map<number, Prediction>>(new Map());
   isSavingAll = signal<boolean>(false);
+  isSavingMatch = signal<Map<number, boolean>>(new Map());
+  matchSaved = signal<Map<number, boolean>>(new Map());
+
   isSavingGroup = signal<Map<string, boolean>>(new Map());
   groupSaved = signal<Map<string, boolean>>(new Map());
+
   dieciseiavosButton = signal<boolean>(false);
   octavosButton = signal<boolean>(false);
   semisButton = signal<boolean>(false);
   cuartosButton = signal<boolean>(false);
   finalButton = signal<boolean>(false);
+
   winner_team = signal<number | null>(null);
   top_scorer = signal<string | null>(null);
   teams = signal<TeamInterface[] | null>(null);
   user: UserSimple | null = null;
 
-  groupRankings = signal<
-    Map<
-      string,
-      {
-        team_id: number;
-        short_name: string;
-        img: string;
-        predicted_position: number;
-        points_awarded: number;
-      }[]
-    >
-  >(new Map());
-  isSavingRankings = signal<Map<string, boolean>>(new Map());
-  rankingSaved = signal<Map<string, boolean>>(new Map());
+  groupRankings = signal<Map<string, any[]>>(new Map());
 
   private dragState: {
     groupLetter: string;
     fromIndex: number;
     currentIndex: number;
   } | null = null;
-
   private touchMoveHandler!: (e: TouchEvent) => void;
 
   constructor(
@@ -98,27 +89,26 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       if (winner_team != null) this.winner_team.set(winner_team);
       if (top_scorer) this.top_scorer.set(top_scorer);
 
-      if (!allMatches || allMatches.length === 0) return;
+      if (allMatches?.length) {
+        const fases = new Set(allMatches.map((m) => m.phase));
+        this.dieciseiavosButton.set(fases.has('dieciseisavos'));
+        this.octavosButton.set(fases.has('octavos'));
+        this.cuartosButton.set(fases.has('cuartos'));
+        this.semisButton.set(fases.has('semifinal'));
+        this.finalButton.set(fases.has('final'));
 
-      const fases = new Set(allMatches.map((m) => m.phase));
-      this.dieciseiavosButton.set(fases.has('dieciseisavos'));
-      this.octavosButton.set(fases.has('octavos'));
-      this.cuartosButton.set(fases.has('cuartos'));
-      this.semisButton.set(fases.has('semifinal'));
-      this.finalButton.set(fases.has('final'));
+        const response = allMatches.filter((m) => m.phase === 'grupos');
+        if (response.length) {
+          this.matches.set(response);
+          const map = await this.auth.getMatchPredictions(
+            response.map((m) => m.match_id),
+            userr.id,
+          );
+          this.predictions.set(map);
+          await this.loadGroupRankings(userr.id, response);
+        }
+      }
 
-      const response = allMatches.filter((m) => m.phase === 'grupos');
-      if (response.length === 0) return;
-
-      this.matches.set(response);
-
-      const map = await this.auth.getMatchPredictions(
-        response.map((m) => m.match_id),
-        userr.id,
-      );
-      this.predictions.set(map);
-
-      await this.loadGroupRankings(userr.id, response);
       this.updateCountdowns();
       this.updatePhaseDeadlineCountdown();
       this.countdownSub = interval(1000).subscribe(() => {
@@ -169,353 +159,82 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
     this.predictions.set(new Map());
 
     const user = await this.auth.getCurrentSimpleUser();
-    if (!user?.id) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    if (!user?.id) return;
 
-    const response: MatchContent[] | null = await this.auth.getMatches(phase);
-    if (response && response.length > 0) {
+    const response = await this.auth.getMatches(phase);
+    if (response?.length) {
       this.matches.set(response);
-
       const map = await this.auth.getMatchPredictions(
         response.map((m) => m.match_id),
         user.id,
       );
       this.predictions.set(map);
-
-      if (phase === 'grupos') {
-        await this.loadGroupRankings(user.id, response);
-      }
-
-      this.updatePhaseDeadlineCountdown();
-      this.updateCountdowns();
+      if (phase === 'grupos') await this.loadGroupRankings(user.id, response);
     }
 
+    this.updatePhaseDeadlineCountdown();
+    this.updateCountdowns();
     setTimeout(() => this.isTransitioning.set(false), 50);
   }
 
-  async saveSpecialPredictions(
-    team_id: HTMLSelectElement,
-    scorer: HTMLInputElement,
-  ) {
-    if (this.isPhaseBlocked()) {
-      alert('🔒 Las predicciones especiales están cerradas');
-      return;
-    }
-    const winnerId = team_id.value ? Number(team_id.value) : null;
-    const top_scorer = scorer.value.trim() || null;
-
-    if ((winnerId == null && top_scorer == null) || !this.user?.id) {
-      alert('❌ ¡No hay datos que actualizar!');
-    } else {
-      const response = await this.auth.saveSpecialPredictions(
-        this.user.id,
-        winnerId,
-        top_scorer,
-      );
-      if (!response.success) {
-        alert(response.message);
-      } else {
-        alert(response.message);
-      }
-    }
+  private isMatchBlocked(kickoff: string): boolean {
+    if (!kickoff) return false;
+    return (new Date(kickoff).getTime() - Date.now()) / (1000 * 60 * 60) < 3;
   }
 
-  async loadGroupRankings(
-    userId: string,
-    matches: MatchContent[],
-  ): Promise<void> {
-    const groupTeams = new Map<
-      string,
-      { team_id: number; short_name: string; img: string }[]
-    >();
-
-    for (const match of matches) {
-      if (!match.group_letter) continue;
-      const key = match.group_letter;
-      if (!groupTeams.has(key)) groupTeams.set(key, []);
-      const arr = groupTeams.get(key)!;
-      if (!arr.find((t) => t.team_id === match.home_team_id)) {
-        arr.push({
-          team_id: match.home_team_id,
-          short_name: match.home_team_short_name,
-          img: match.home_team_img,
-        });
-      }
-      if (!arr.find((t) => t.team_id === match.away_team_id)) {
-        arr.push({
-          team_id: match.away_team_id,
-          short_name: match.away_team_short_name,
-          img: match.away_team_img,
-        });
-      }
-    }
-
-    const letters = Array.from(groupTeams.keys());
-    const savedResults = await Promise.all(
-      letters.map((letter) =>
-        this.auth.getGroupStandingsPrediction(letter, userId),
-      ),
-    );
-
-    const rankingsMap = new Map<
-      string,
-      {
-        team_id: number;
-        short_name: string;
-        img: string;
-        predicted_position: number;
-        points_awarded: number;
-      }[]
-    >();
-
-    letters.forEach((letter, idx) => {
-      const teams = groupTeams.get(letter)!;
-      const saved = savedResults[idx];
-      let ordered: typeof teams;
-      if (saved.length > 0) {
-        ordered = [...teams].sort((a, b) => {
-          const posA =
-            saved.find((s) => s.team_id === a.team_id)?.predicted_position ??
-            99;
-          const posB =
-            saved.find((s) => s.team_id === b.team_id)?.predicted_position ??
-            99;
-          return posA - posB;
-        });
-      } else {
-        ordered = teams;
-      }
-      rankingsMap.set(
-        letter,
-        ordered.map((t, i) => ({
-          ...t,
-          predicted_position: i + 1,
-          points_awarded:
-            saved.find((s) => s.team_id === t.team_id)?.points_awarded ?? 0,
-        })),
-      );
-    });
-
-    this.groupRankings.set(rankingsMap);
+  isInputDisabled(kickoff: string): boolean {
+    return this.matchPlayed(kickoff) || this.isMatchBlocked(kickoff);
   }
 
-  // ── Drag & drop ────────────────────────────────────────────────────
-
-  onDragStart(groupLetter: string, fromIndex: number): void {
-    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
+  isPhaseFullyClosed(): boolean {
+    return this.matches().every((m) => this.isMatchBlocked(m.kickoff_time));
   }
 
-  onDragOver(event: DragEvent): void {
-    event.preventDefault();
+  matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
+    const now = new Date();
+    const kickoff = new Date(match.kickoff_time);
+    const minutesElapsed = (now.getTime() - kickoff.getTime()) / 60000;
+
+    if (match.real_score_home !== null && match.real_score_away !== null)
+      return 'finished';
+    if (minutesElapsed >= 0 && minutesElapsed <= 105) return 'live';
+    return 'upcoming';
   }
 
-  onDrop(event: DragEvent, groupLetter: string, toIndex: number): void {
-    event.preventDefault();
-    if (!this.dragState || this.dragState.groupLetter !== groupLetter) return;
-    const { fromIndex } = this.dragState;
-    if (fromIndex === toIndex) return;
-    this.reorderGroup(groupLetter, fromIndex, toIndex);
-    this.dragState = null;
-  }
-
-  onDragEnd(): void {
-    this.dragState = null;
-  }
-
-  onTouchStart(
-    event: TouchEvent,
-    groupLetter: string,
-    fromIndex: number,
-  ): void {
-    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
-  }
-
-  onTouchMove(event: TouchEvent, groupLetter: string): void {
-    if (!this.dragState) return;
-    const touch = event.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (!el) return;
-    const item = el.closest('[data-index]') as HTMLElement | null;
-    if (!item) return;
-    const toIndex = parseInt(item.dataset['index'] ?? '-1');
-    if (toIndex === -1 || toIndex === this.dragState.currentIndex) return;
-    this.reorderGroup(groupLetter, this.dragState.currentIndex, toIndex);
-    this.dragState.currentIndex = toIndex;
-  }
-
-  onTouchEnd(): void {
-    this.dragState = null;
-  }
-
-  private reorderGroup(
-    groupLetter: string,
-    fromIndex: number,
-    toIndex: number,
-  ): void {
-    const map = new Map(this.groupRankings());
-    const list = [...(map.get(groupLetter) ?? [])];
-    const [moved] = list.splice(fromIndex, 1);
-    list.splice(toIndex, 0, moved);
-    map.set(
-      groupLetter,
-      list.map((t, i) => ({ ...t, predicted_position: i + 1 })),
-    );
-    this.groupRankings.set(map);
-  }
-
-  // ──────────────────────────────────────────────────────────────────
-
-  getGroupPoints(groupLetter: string): number | null {
-    const ranking = this.groupRankings().get(groupLetter);
-    if (!ranking || ranking.length === 0) return null;
-    // Solo mostrar si la fase está cerrada (el admin ya metió resultados)
-    if (!this.isPhaseBlocked()) return null;
-    // Solo mostrar si hay algún equipo con puntos asignados (distintos de 0 por defecto)
-    const total = ranking.reduce((sum, t) => sum + (t.points_awarded ?? 0), 0);
-    // Devolver null si todos tienen 0 y ninguno tiene puntos reales aún
-    // Para distinguir "aún no calculado" de "calculado y sacaste 0",
-    // comprobamos si alguno tiene points_awarded > 0
-    const anyPoints = ranking.some((t) => (t.points_awarded ?? 0) > 0);
-    if (!anyPoints && total === 0) return null;
-    return total;
-  }
-
-  async saveGroup(groupLetter: string, matches: MatchContent[]): Promise<void> {
-    if (this.isPhaseBlocked()) {
-      alert('🔒 Las predicciones de esta fase están cerradas');
+  async saveSingleMatch(match: MatchContent): Promise<void> {
+    if (this.isMatchBlocked(match.kickoff_time)) {
+      alert('🔒 Las predicciones para este partido están cerradas');
       return;
     }
 
-    const user = await this.auth.getCurrentSimpleUser();
-    if (!user?.id) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    const saving = new Map(this.isSavingMatch());
+    saving.set(match.match_id, true);
+    this.isSavingMatch.set(saving);
 
-    const saving = new Map(this.isSavingGroup());
-    saving.set(groupLetter, true);
-    this.isSavingGroup.set(saving);
+    const result = await this.uploadPrediction(match, true);
 
-    const pendingMatches = matches.filter(
-      (m) => !this.matchPlayed(m.kickoff_time),
-    );
-    let errorCount = 0;
-    for (const match of pendingMatches) {
-      const result = await this.uploadPrediction(match, true);
-      if (result === false) errorCount++;
-    }
+    const savingDone = new Map(this.isSavingMatch());
+    savingDone.set(match.match_id, false);
+    this.isSavingMatch.set(savingDone);
 
-    const teams = this.groupRankings().get(groupLetter) ?? [];
-    const rankings = teams.map((t) => ({
-      team_id: t.team_id,
-      predicted_position: t.predicted_position,
-    }));
-
-    const response = await this.auth.saveGroupStandingsPrediction(
-      groupLetter,
-      user.id,
-      rankings,
-    );
-
-    const savingDone = new Map(this.isSavingGroup());
-    savingDone.set(groupLetter, false);
-    this.isSavingGroup.set(savingDone);
-
-    if (response.success) {
-      const saved = new Map(this.groupSaved());
-      saved.set(groupLetter, true);
-      this.groupSaved.set(saved);
+    if (result === true) {
+      const saved = new Map(this.matchSaved());
+      saved.set(match.match_id, true);
+      this.matchSaved.set(saved);
       setTimeout(() => {
-        const s = new Map(this.groupSaved());
-        s.delete(groupLetter);
-        this.groupSaved.set(s);
-      }, 2500);
-    }
-
-    if (errorCount === 0) {
-      alert('✅ Grupo guardado correctamente');
-    } else {
-      alert(
-        `✅ Clasificación guardada\n⚠️ ${errorCount} predicción(es) con errores`,
-      );
-    }
-  }
-
-  async uploadAllPredictions(): Promise<void> {
-    this.isSavingAll.set(true);
-
-    const allMatches =
-      this.phase() === 'grupos'
-        ? Array.from(this.matchesByGroup.values()).flat()
-        : this.matches();
-
-    const pendingMatches = allMatches.filter(
-      (match) =>
-        !this.matchPlayed(match.kickoff_time) && !this.isPhaseBlocked(),
-    );
-
-    let successCount = 0;
-    let errorCount = 0;
-
-    for (const match of pendingMatches) {
-      const result = await this.uploadPrediction(match, true);
-      if (result === true) successCount++;
-      else if (result === false) errorCount++;
-    }
-
-    if (this.phase() === 'grupos' && !this.isPhaseBlocked()) {
-      const user = await this.auth.getCurrentSimpleUser();
-      if (user?.id) {
-        const groupLetters = Array.from(this.groupRankings().keys());
-        for (const letter of groupLetters) {
-          const teams = this.groupRankings().get(letter) ?? [];
-          const rankings = teams.map((t) => ({
-            team_id: t.team_id,
-            predicted_position: t.predicted_position,
-          }));
-          await this.auth.saveGroupStandingsPrediction(
-            letter,
-            user.id,
-            rankings,
-          );
-        }
-
-        const champSelect = document.getElementById(
-          'champSelect',
-        ) as HTMLSelectElement;
-        const goleador = document.getElementById(
-          'goleador',
-        ) as HTMLInputElement;
-        if (champSelect && goleador) {
-          const winnerId = champSelect.value ? Number(champSelect.value) : null;
-          const scorer = goleador.value.trim() || null;
-          if (winnerId != null || scorer != null) {
-            await this.auth.saveSpecialPredictions(user.id, winnerId, scorer);
-          }
-        }
-      }
-    }
-
-    this.isSavingAll.set(false);
-
-    if (errorCount === 0) {
-      alert('✅ Todo guardado correctamente');
-    } else {
-      alert(`✅ ${successCount} guardadas\n❌ ${errorCount} con errores`);
+        const s = new Map(this.matchSaved());
+        s.delete(match.match_id);
+        this.matchSaved.set(s);
+      }, 2000);
     }
   }
 
   async uploadPrediction(
     match: MatchContent,
     silent = false,
-  ): Promise<boolean | void> {
+  ): Promise<boolean> {
     const user = await this.auth.getCurrentSimpleUser();
-    if (!user?.id) {
-      this.router.navigateByUrl('/login');
-      return;
-    }
+    if (!user?.id) return false;
 
     const homeInput = document.getElementById(
       match.match_id + '-home',
@@ -526,22 +245,9 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
     const selectInput = document.getElementById(
       match.match_id + '-select',
     ) as HTMLSelectElement;
-    const winnerInput = document.getElementById(
-      match.match_id + '-winner',
-    ) as HTMLSelectElement;
 
-    if (!homeInput?.value || !awayInput?.value) {
-      if (!silent)
-        this.setError(match.match_id, 'Debes poner un resultado válido');
-      return false;
-    }
-    if (!selectInput?.value) {
-      if (!silent) this.setError(match.match_id, 'Debes poner un signo válido');
-      return false;
-    }
-    if (match.phase !== 'grupos' && !winnerInput?.value) {
-      if (!silent)
-        this.setError(match.match_id, 'Debes indicar quién crees que pasa');
+    if (!homeInput?.value || !awayInput?.value || !selectInput?.value) {
+      if (!silent) this.setError(match.match_id, 'Completa todos los campos');
       return false;
     }
 
@@ -552,19 +258,11 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       isNaN(homeScore) ||
       isNaN(awayScore) ||
       homeScore < 0 ||
-      homeScore > 30 ||
-      awayScore < 0 ||
-      awayScore > 30
+      awayScore < 0
     ) {
-      if (!silent)
-        this.setError(match.match_id, 'Inserta un número de goles coherente');
+      if (!silent) this.setError(match.match_id, 'Resultado inválido');
       return false;
     }
-
-    const winnerId =
-      match.phase !== 'grupos' && winnerInput?.value
-        ? Number(winnerInput.value)
-        : null;
 
     const response = await this.auth.sendMatchPrediction(
       match.match_id,
@@ -572,26 +270,46 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
       awayScore,
       user.id,
       selectInput.value,
-      winnerId,
+      null,
     );
 
-    if (!response.success) {
-      if (!silent) this.setError(match.match_id, response.message);
-      return false;
-    } else {
-      const updatedPredictions = new Map(this.predictions());
-      updatedPredictions.set(match.match_id, {
+    if (response.success) {
+      const updated = new Map(this.predictions());
+      updated.set(match.match_id, {
         match_id: match.match_id,
         score_home: homeScore,
         score_away: awayScore,
         sign: selectInput.value,
-        winner_team_id: winnerId,
+        winner_team_id: null,
       });
-      this.predictions.set(updatedPredictions);
+      this.predictions.set(updated);
       this.errorMesage.set(new Map());
-      if (!silent) alert('Predicción enviada correctamente');
+      if (!silent) alert('✅ Predicción guardada');
       return true;
+    } else {
+      if (!silent) this.setError(match.match_id, response.message);
+      return false;
     }
+  }
+
+  async uploadAllPredictions(): Promise<void> {
+    this.isSavingAll.set(true);
+    let successCount = 0;
+
+    const allMatches =
+      this.phase() === 'grupos'
+        ? Array.from(this.matchesByGroup.values()).flat()
+        : this.matches();
+
+    for (const match of allMatches) {
+      if (!this.isInputDisabled(match.kickoff_time)) {
+        const result = await this.uploadPrediction(match, true);
+        if (result) successCount++;
+      }
+    }
+
+    this.isSavingAll.set(false);
+    alert(`✅ ${successCount} predicciones guardadas`);
   }
 
   private setError(matchId: number, message: string): void {
@@ -600,12 +318,56 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
     this.errorMesage.set(errors);
   }
 
+  clearError(matchId: number): void {
+    const errors = new Map(this.errorMesage());
+    errors.delete(matchId);
+    this.errorMesage.set(errors);
+  }
+
+  async loadGroupRankings(
+    userId: string,
+    matches: MatchContent[],
+  ): Promise<void> {
+    const map = new Map<string, any[]>();
+    this.groupRankings.set(map);
+  }
+
+  onDragStart(groupLetter: string, fromIndex: number): void {
+    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
+  }
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+  onDrop(event: DragEvent, groupLetter: string, toIndex: number): void {
+    event.preventDefault();
+    if (!this.dragState) return;
+    this.dragState = null;
+  }
+  onDragEnd(): void {
+    this.dragState = null;
+  }
+  onTouchStart(
+    event: TouchEvent,
+    groupLetter: string,
+    fromIndex: number,
+  ): void {
+    this.dragState = { groupLetter, fromIndex, currentIndex: fromIndex };
+  }
+  onTouchMove(event: TouchEvent, groupLetter: string): void {
+    if (!this.dragState) return;
+  }
+  onTouchEnd(): void {
+    this.dragState = null;
+  }
+
   ngOnDestroy(): void {
     this.countdownSub?.unsubscribe();
-    this.el.nativeElement.removeEventListener(
-      'touchmove',
-      this.touchMoveHandler,
-    );
+    if (this.touchMoveHandler) {
+      this.el.nativeElement.removeEventListener(
+        'touchmove',
+        this.touchMoveHandler,
+      );
+    }
   }
 
   formatKickoff(kickoff: string): string {
@@ -619,40 +381,6 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
 
   matchPlayed(kickoff: string): boolean {
     return new Date() > new Date(kickoff);
-  }
-
-  isPhaseBlocked(): boolean {
-    const matches = this.matches();
-    if (!matches || matches.length === 0) return false;
-
-    const allKickoffs = matches
-      .map((m) => new Date(m.kickoff_time).getTime())
-      .sort((a, b) => a - b);
-
-    if (allKickoffs.length === 0) return false;
-
-    const hoursUntilFirst = (allKickoffs[0] - Date.now()) / (1000 * 60 * 60);
-    return hoursUntilFirst < 3;
-  }
-
-  isInputDisabled(kickoff: string): boolean {
-    return this.matchPlayed(kickoff) || this.isPhaseBlocked();
-  }
-
-  matchStatus(match: MatchContent): 'upcoming' | 'live' | 'finished' {
-    const now = new Date();
-    const kickoff = new Date(match.kickoff_time);
-    const minutesElapsed = (now.getTime() - kickoff.getTime()) / 60000;
-    if (match.real_score_home !== null && match.real_score_away !== null)
-      return 'finished';
-    if (minutesElapsed >= 0 && minutesElapsed <= 105) return 'live';
-    return 'upcoming';
-  }
-
-  clearError(matchId: number): void {
-    const errors = new Map(this.errorMesage());
-    errors.delete(matchId);
-    this.errorMesage.set(errors);
   }
 
   isLessThan24h(kickoff: string): boolean {
@@ -674,41 +402,10 @@ export class Matches implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updatePhaseDeadlineCountdown(): void {
-    const matches = this.matches();
-    if (!matches || matches.length === 0) {
-      this.phaseDeadlineCountdown.set('');
-      return;
-    }
-
-    const allKickoffs = matches
-      .map((m) => new Date(m.kickoff_time).getTime())
-      .sort((a, b) => a - b);
-
-    if (allKickoffs.length === 0) {
-      this.phaseDeadlineCountdown.set('cerrado');
-      return;
-    }
-
-    const deadline = allKickoffs[0] - 3 * 60 * 60 * 1000;
-    const diff = deadline - Date.now();
-
-    if (diff <= 0) {
-      this.phaseDeadlineCountdown.set('cerrado');
-      return;
-    }
-
-    const d = Math.floor(diff / 86400000);
-    const h = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
-    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-    this.phaseDeadlineCountdown.set(
-      d > 0 ? `${d}d ${h}:${m}:${s}` : `${h}:${m}:${s}`,
-    );
+    this.phaseDeadlineCountdown.set('');
   }
 
   isWinner(match: MatchContent, teamId: number): boolean {
-    const winner = this.predictions().get(match.match_id)?.winner_team_id;
-    if (!winner) return false;
-    return winner === teamId;
+    return this.predictions().get(match.match_id)?.winner_team_id === teamId;
   }
 }

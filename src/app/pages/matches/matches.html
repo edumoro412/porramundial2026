@@ -62,7 +62,7 @@
     <p class="matches__deadline--closed">🔒 Predicciones cerradas</p>
     } @else {
     <p class="matches__deadline--open">
-      ⏳ Cierre de predicciones de {{this.phase()}} en:
+      ⏳ Cierre individual de predicciones en
       <strong>{{ phaseDeadlineCountdown() }}</strong>
     </p>
     }
@@ -119,32 +119,16 @@
 
           <div class="matches__matches--prediction">
             <p class="matches__matches--prediction-title">Tu predicción</p>
+
             @if (matchStatus(match) === 'live' || matchStatus(match) ===
-            'finished' || isPhaseBlocked()) { @if
-            (!predictions().get(match.match_id) ||
-            predictions().get(match.match_id)?.score_home == null ||
-            predictions().get(match.match_id)?.score_away == null) {
-            <small class="no-prediction"
-              >No hiciste predicción para este partido</small
-            >
-            } @else {
+            'finished' || isInputDisabled(match.kickoff_time)) {
             <p class="your-prediction">
-              {{ predictions().get(match.match_id)?.score_home }} - {{
-              predictions().get(match.match_id)?.score_away }} @if
+              {{ predictions().get(match.match_id)?.score_home ?? '-' }} - {{
+              predictions().get(match.match_id)?.score_away ?? '-' }} @if
               (predictions().get(match.match_id)?.sign) { ({{
               predictions().get(match.match_id)?.sign }}) }
             </p>
-            @if (matchStatus(match) === 'finished') { @if
-            (predictions().get(match.match_id)?.points_awarded != null) {
-            <p
-              class="points-awarded"
-              [class.points-awarded--zero]="predictions().get(match.match_id)?.points_awarded === 0"
-              [class.points-awarded--low]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 0 && (predictions().get(match.match_id)?.points_awarded ?? 0) <= 5"
-              [class.points-awarded--high]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 5"
-            >
-              +{{ predictions().get(match.match_id)?.points_awarded }} pts
-            </p>
-            } } } } @else {
+            } @else {
             <div>
               <input
                 [id]="match.match_id+'-home'"
@@ -154,7 +138,6 @@
                 class="matches__matches--prediction-input"
                 (input)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.score_home"
-                [disabled]="isInputDisabled(match.kickoff_time)"
               />
               <span class="matches__matches--prediction-span"> - </span>
               <input
@@ -165,9 +148,9 @@
                 class="matches__matches--prediction-input"
                 (input)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.score_away"
-                [disabled]="isInputDisabled(match.kickoff_time)"
               />
             </div>
+
             <div class="matches__matches--prediction-sign">
               <label
                 [for]="match.match_id+'-select'"
@@ -175,89 +158,33 @@
                 >Signo:</label
               >
               <select
-                name="sign"
                 [id]="match.match_id+'-select'"
                 class="matches__matches--prediction-input"
                 (change)="clearError(match.match_id)"
                 [value]="predictions().get(match.match_id)?.sign"
-                [disabled]="isInputDisabled(match.kickoff_time)"
               >
                 <option value="X">X</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
               </select>
             </div>
-            @if(errorMesage().get(match.match_id)){
-            <small class="error">{{ errorMesage().get(match.match_id) }}</small>
-            } }
-          </div>
-        </div>
-        }
-      </div>
 
-      @if (groupRankings().get(entry.key.replace('Grupo ', '')); as ranking) {
-      <div class="matches__group--ranking">
-        <h4 class="matches__group--ranking-title">
-          🏆 Tu clasificación predicha
-        </h4>
-        @if (!isPhaseBlocked()) {
-        <p class="matches__group--ranking-hint">
-          Arrastra los equipos para ordenarlos
-        </p>
-        }
-        <div
-          class="matches__group--ranking-list"
-          [class.blocked]="isPhaseBlocked()"
-        >
-          @for (team of ranking; track team.team_id; let i = $index) {
-          <div
-            class="matches__group--ranking-item"
-            [attr.data-index]="i"
-            [draggable]="!isPhaseBlocked()"
-            (dragstart)="!isPhaseBlocked() && onDragStart(entry.key.replace('Grupo ', ''), i)"
-            (dragover)="onDragOver($event)"
-            (drop)="!isPhaseBlocked() && onDrop($event, entry.key.replace('Grupo ', ''), i)"
-            (dragend)="onDragEnd()"
-            (touchstart)="!isPhaseBlocked() && onTouchStart($event, entry.key.replace('Grupo ', ''), i)"
-            (touchend)="!isPhaseBlocked() && onTouchEnd()"
-          >
-            <span class="ranking-pos">{{ i + 1 }}º</span>
-            <img [src]="team.img" class="ranking-flag" alt="" />
-            <span class="ranking-name">{{ team.short_name }}</span>
-            @if (!isPhaseBlocked()) {
-            <span class="ranking-drag-icon">⠿</span>
+            <button
+              class="matches__matches--prediction-button"
+              (click)="saveSingleMatch(match)"
+              [disabled]="isSavingMatch().get(match.match_id) || isInputDisabled(match.kickoff_time)"
+            >
+              @if (matchSaved().get(match.match_id)) { ✅ Guardado } @else if
+              (isSavingMatch().get(match.match_id)) { Guardando... } @else {
+              Guardar partido }
+            </button>
+            } @if(errorMesage().get(match.match_id)){
+            <small class="error">{{ errorMesage().get(match.match_id) }}</small>
             }
           </div>
-          }
-        </div>
-        @if (isPhaseBlocked()) {
-        <div class="matches__group--ranking-footer">
-          <p class="matches__group--ranking-closed">🔒 Clasificación cerrada</p>
-          @if (getGroupPoints(entry.key.replace('Grupo ', '')) !== null) {
-          <p
-            class="points-awarded matches__group--ranking-points"
-            [class.points-awarded--zero]="getGroupPoints(entry.key.replace('Grupo ', '')) === 0"
-            [class.points-awarded--low]="(getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) > 0 && (getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) <= 10"
-            [class.points-awarded--high]="(getGroupPoints(entry.key.replace('Grupo ', '')) ?? 0) > 10"
-          >
-            +{{ getGroupPoints(entry.key.replace('Grupo ', '')) }} pts
-          </p>
-          }
         </div>
         }
       </div>
-
-      @if (!isPhaseBlocked()) {
-      <button
-        class="matches__group--ranking-save"
-        (click)="saveGroup(entry.key.replace('Grupo ', ''), entry.value)"
-        [disabled]="isSavingGroup().get(entry.key.replace('Grupo ', ''))"
-      >
-        @if (groupSaved().get(entry.key.replace('Grupo ', ''))) { ✅ Guardado }
-        @else if (isSavingGroup().get(entry.key.replace('Grupo ', ''))) {
-        Guardando... } @else { Guardar grupo }
-      </button>
-      } }
     </div>
     } } @else { @for(match of this.matches(); track match.match_id){
     <div class="matches__matches--match">
@@ -300,55 +227,18 @@
         </div>
       </div>
 
-      @if (matchStatus(match) === 'finished' && match.real_winner_team_id) {
-      <div class="matches__passes">
-        <small class="passes-text">
-          Pasa:
-          <strong
-            >{{ match.real_winner_team_id === match.home_team_id ?
-            match.home_team_short_name : match.away_team_short_name }}</strong
-          >
-        </small>
-      </div>
-      }
-
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
+
         @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished'
-        || isPhaseBlocked()) { @if (!predictions().get(match.match_id) ||
-        predictions().get(match.match_id)?.score_home == null ||
-        predictions().get(match.match_id)?.score_away == null) {
-        <small class="no-prediction"
-          >No hiciste predicción para este partido</small
-        >
-        } @else {
+        || isInputDisabled(match.kickoff_time)) {
         <p class="your-prediction">
-          {{ predictions().get(match.match_id)?.score_home }} - {{
-          predictions().get(match.match_id)?.score_away }} @if
+          {{ predictions().get(match.match_id)?.score_home ?? '-' }} - {{
+          predictions().get(match.match_id)?.score_away ?? '-' }} @if
           (predictions().get(match.match_id)?.sign) { ({{
           predictions().get(match.match_id)?.sign }}) }
         </p>
-        @if (match.phase !== 'grupos' && match.phase !== 'final' &&
-        predictions().get(match.match_id)?.winner_team_id) {
-        <small class="your-prediction">
-          Pasa:
-          <strong
-            >{{ predictions().get(match.match_id)?.winner_team_id ===
-            match.home_team_id ? match.home_team_short_name :
-            match.away_team_short_name }}</strong
-          >
-        </small>
-        } @if (matchStatus(match) === 'finished') { @if
-        (predictions().get(match.match_id)?.points_awarded != null) {
-        <p
-          class="points-awarded"
-          [class.points-awarded--zero]="predictions().get(match.match_id)?.points_awarded === 0"
-          [class.points-awarded--low]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 0 && (predictions().get(match.match_id)?.points_awarded ?? 0) <= 5"
-          [class.points-awarded--high]="(predictions().get(match.match_id)?.points_awarded ?? 0) > 5"
-        >
-          +{{ predictions().get(match.match_id)?.points_awarded }} pts
-        </p>
-        } } } } @else {
+        } @else {
         <div>
           <input
             [id]="match.match_id+'-home'"
@@ -358,7 +248,6 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.score_home"
-            [disabled]="isInputDisabled(match.kickoff_time)"
           />
           <span class="matches__matches--prediction-span"> - </span>
           <input
@@ -369,9 +258,9 @@
             class="matches__matches--prediction-input"
             (input)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.score_away"
-            [disabled]="isInputDisabled(match.kickoff_time)"
           />
         </div>
+
         <div class="matches__matches--prediction-sign">
           <label
             [for]="match.match_id+'-select'"
@@ -379,103 +268,41 @@
             >Signo:</label
           >
           <select
-            name="sign"
             [id]="match.match_id+'-select'"
             class="matches__matches--prediction-input"
             (change)="clearError(match.match_id)"
             [value]="predictions().get(match.match_id)?.sign"
-            [disabled]="isInputDisabled(match.kickoff_time)"
           >
             <option value="X">X</option>
             <option value="1">1</option>
             <option value="2">2</option>
           </select>
         </div>
-        @if (match.phase !== 'grupos' && match.phase !== 'final') {
-        <select
-          [id]="match.match_id+'-winner'"
-          class="matches__matches--prediction-input"
-          (change)="clearError(match.match_id)"
-          [disabled]="isInputDisabled(match.kickoff_time)"
+
+        <button
+          class="matches__matches--prediction-button"
+          (click)="saveSingleMatch(match)"
+          [disabled]="isSavingMatch().get(match.match_id) || isInputDisabled(match.kickoff_time)"
         >
-          <option value="">¿Quién pasa?</option>
-          <option
-            [value]="match.home_team_id"
-            [selected]="isWinner(match, match.home_team_id)"
-          >
-            {{match.home_team_short_name}}
-          </option>
-          <option
-            [value]="match.away_team_id"
-            [selected]="isWinner(match, match.away_team_id)"
-          >
-            {{match.away_team_short_name}}
-          </option>
-        </select>
+          @if (matchSaved().get(match.match_id)) { ✅ Guardado } @else if
+          (isSavingMatch().get(match.match_id)) { Guardando... } @else { Guardar
+          partido }
+        </button>
         } @if(errorMesage().get(match.match_id)){
         <small class="error">{{ errorMesage().get(match.match_id) }}</small>
-        } }
+        }
       </div>
     </div>
     } }
   </div>
 
-  <div class="matches__save-all" [class.is-loading]="isTransitioning()">
-    @if (phase() === 'grupos') {
-    <div class="matches__specials">
-      <h2 class="matches__specials--title">Predicciones especiales</h2>
-      <section class="matches__specials--grid">
-        <div class="matches__specials--card">
-          <h3 class="matches__specials--card-title">🏆 Ganador del torneo</h3>
-          <select
-            name="champSelect"
-            id="champSelect"
-            #champSelect
-            class="matches__specials--card-select"
-            [disabled]="isPhaseBlocked()"
-          >
-            <option value="">Selecciona un equipo</option>
-            @for(team of this.teams(); track team.team_id){
-            <option
-              [value]="team.team_id"
-              [selected]="team.team_id === this.winner_team()"
-            >
-              {{ team.name }}
-            </option>
-            }
-          </select>
-        </div>
-        <div class="matches__specials--card">
-          <h3 class="matches__specials--card-title">⚽ Máximo goleador</h3>
-          <input
-            class="matches__specials--card-input"
-            type="text"
-            name="goleador"
-            id="goleador"
-            #goleador
-            placeholder="Nombre del jugador"
-            [value]="top_scorer() ?? ''"
-            [disabled]="isPhaseBlocked()"
-          />
-        </div>
-      </section>
-      @if (!isPhaseBlocked()) {
-      <button
-        (click)="saveSpecialPredictions(champSelect, goleador)"
-        class="matches__specials--button"
-      >
-        Guardar predicciones especiales
-      </button>
-      }
-    </div>
-    }
-
+  <div class="matches__save-all">
     <button
       class="matches__save-all--button"
       (click)="uploadAllPredictions()"
-      [disabled]="isSavingAll() || isPhaseBlocked()"
+      [disabled]="isSavingAll()"
     >
-      {{ isSavingAll() ? 'Guardando...' : 'Guardar todos' }}
+      {{ isSavingAll() ? 'Guardando todo...' : 'Guardar todos' }}
     </button>
   </div>
 </div>
