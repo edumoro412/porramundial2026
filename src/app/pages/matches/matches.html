@@ -399,6 +399,29 @@
           </select>
         </div>
 
+        @if (match.phase !== 'grupos' && match.phase !== 'final') {
+        <select
+          [id]="match.match_id+'-winner'"
+          class="matches__matches--prediction-input"
+          (change)="clearError(match.match_id)"
+          [disabled]="isInputDisabled(match.kickoff_time)"
+        >
+          <option value="">¿Quién pasa?</option>
+          <option
+            [value]="match.home_team_id"
+            [selected]="isWinner(match, match.home_team_id)"
+          >
+            {{match.home_team_short_name}}
+          </option>
+          <option
+            [value]="match.away_team_id"
+            [selected]="isWinner(match, match.away_team_id)"
+          >
+            {{match.away_team_short_name}}
+          </option>
+        </select>
+        }
+
         <button
           class="matches__matches--prediction-button"
           (click)="saveSingleMatch(match)"
