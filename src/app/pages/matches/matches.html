@@ -188,7 +188,6 @@
               </select>
             </div>
 
-            <!-- Botón individual -->
             <button
               class="matches__matches--prediction-button"
               (click)="saveSingleMatch(match)"
@@ -314,8 +313,15 @@
 
       <div class="matches__matches--prediction">
         <p class="matches__matches--prediction-title">Tu predicción</p>
-        @if (matchStatus(match) === 'live' || matchStatus(match) === 'finished'
-        || isInputDisabled(match.kickoff_time)) { @if
+        @if (matchStatus(match) === 'upcoming') { @if
+        (getMatchBlockCountdown(match.kickoff_time)) {
+        <p class="match-block-countdown">
+          🔒 Cierra en: {{ getMatchBlockCountdown(match.kickoff_time) }}
+        </p>
+        } @else if (isInputDisabled(match.kickoff_time)) {
+        <p class="match-block-countdown">🔒 Predicción cerrada</p>
+        } } @if (matchStatus(match) === 'live' || matchStatus(match) ===
+        'finished' || isInputDisabled(match.kickoff_time)) { @if
         (!predictions().get(match.match_id) ||
         predictions().get(match.match_id)?.score_home == null ||
         predictions().get(match.match_id)?.score_away == null) {
